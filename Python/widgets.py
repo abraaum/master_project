@@ -12,7 +12,7 @@ Ordmm_Land_Widget().display()
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
-from ipywidgets import interact, FloatSlider #, Button, Dropdown, Layout
+from ipywidgets import interact, FloatSlider, Dropdown #, Button,  Layout
 import ORdmm_Land as model
 import ORdmm_Land_em_coupling as model_em
 import importlib
@@ -29,6 +29,11 @@ class Ordmm_Land_Widget:
     def __init__(self):
         interact(
             self.solve_and_plot,
+            cell_type = Dropdown(
+                options={'m':2, 'epi': 1, 'endo': 0},
+                value=0,
+                description='Cell type:',
+            ),
             GNa_coeff=FloatSlider(
                 value=1,
                 min=0,
@@ -127,6 +132,7 @@ class Ordmm_Land_Widget:
 
     def solve_and_plot(
         self, 
+        cell_type,
         GNa_coeff, 
         Gto_coeff,
         GKr_coeff,
@@ -148,7 +154,7 @@ class Ordmm_Land_Widget:
         # print(GNa_coeff)
 
         # run model
-        parameters = model.init_parameter_values()
+        parameters = model.init_parameter_values(celltype=cell_type)
         y0 = model.init_state_values()
         T = np.linspace(0, 500, 501)
         Y = odeint(model.rhs, y0, T, args=(parameters,))
@@ -164,6 +170,7 @@ class Ordmm_Land_Widget:
 
         # parameters = model.init_parameter_values(Params_to_change)
         parameters = model.init_parameter_values(
+            celltype=cell_type,
             GNa_rate=GNa_coeff,
             Gto_rate=Gto_coeff,
             GKr_rate=GKr_coeff,
