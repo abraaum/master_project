@@ -28,4 +28,9 @@ No files have been changed from the original code.
 
 ### Gotran
 
+Convert the gotran model to python:
+```
+python -m gotran gotran2py ORdmm_Land_em_coupling.ode
+```
+
 No files have been changed from the original code.
