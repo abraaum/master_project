@@ -102,7 +102,7 @@ class Ordmm_Land_Widget:
             GpCa_coeff=FloatSlider(
                 value=1,
                 min=0,
-                max=10,
+                max=1000,
                 step=0.1,
                 description="gpCa rate (IpCa)",
                 continuous_update=False,
@@ -160,7 +160,7 @@ class Ordmm_Land_Widget:
         axs[0, 0].plot(T, Y[:, model.state_indices("v")])
         axs[0, 1].plot(T, Y[:, model.state_indices("cai")])
         axs[1, 0].plot(T, Y[:, model.monitor_indices('INa')])
-        axs[1, 1].plot(T, Y[:, model.monitor_indices('INa')])
+        axs[1, 1].plot(T, Y[:, model.monitor_indices('INaL')])
 
         # parameters = model.init_parameter_values(Params_to_change)
         parameters = model.init_parameter_values(
@@ -188,9 +188,9 @@ class Ordmm_Land_Widget:
         axs[1, 0].plot(T, Y[:, model.monitor_indices('INa')])
         axs[1, 0].legend((r"Default", r"$new$"))
         axs[1, 0].set(ylabel="I_Na")
-        axs[1, 1].plot(T, Y[:, model.monitor_indices('INa')])
+        axs[1, 1].plot(T, Y[:, model.monitor_indices('INaL')])
         axs[1, 1].legend((r"Default", r"$new$"))
-        axs[1, 1].set(ylabel="I_Na")
+        axs[1, 1].set(ylabel="INaL")
   
 
         plt.subplots_adjust(left=0.1,
@@ -288,7 +288,7 @@ class Ordmm_Land_em_Widget:
             GpCa_coeff=FloatSlider(
                 value=1,
                 min=0,
-                max=10,
+                max=1000,
                 step=0.1,
                 description="gpCa rate (IpCa)",
                 continuous_update=False,
@@ -341,12 +341,17 @@ class Ordmm_Land_em_Widget:
 
         # Extract monitored values
         monitor = np.array([model_em.monitor(r, t, parameters) for r, t in zip(Y, T)])
+        I_CaL_idx = model_em.monitor_indices('ICaL')
+        I_CaL = monitor.T[I_CaL_idx]
+
+        #ax[0].plot(tsteps, V)
 
         fig, axs = plt.subplots(2, 2, figsize=(12,8))
         axs[0, 0].plot(T, Y[:, model_em.state_indices("v")])
         axs[0, 1].plot(T, Y[:, model_em.state_indices("cai")])
         axs[1, 0].plot(T, Y[:, model_em.monitor_indices('INa')])
-        axs[1, 1].plot(T, Y[:, model_em.monitor_indices('INa')])
+        #axs[1, 1].plot(T, Y[:, model_em.monitor_indices('ICaL')])
+        axs[1, 1].plot(T, I_CaL)
 
         # parameters = model.init_parameter_values(Params_to_change)
         parameters = model_em.init_parameter_values(
@@ -365,6 +370,10 @@ class Ordmm_Land_em_Widget:
         T = np.linspace(0, 500, 501)
         Y = odeint(model_em.rhs, y0, T, args=(parameters,))
 
+        monitor = np.array([model_em.monitor(r, t, parameters) for r, t in zip(Y, T)])
+        I_CaL_idx = model_em.monitor_indices('ICaL')
+        I_CaL = monitor.T[I_CaL_idx]
+
         axs[0, 0].plot(T, Y[:, model_em.state_indices("v")])
         axs[0, 0].legend((r"Default", r"$new$"))
         axs[0, 0].set(ylabel="V(mV)")
@@ -374,9 +383,10 @@ class Ordmm_Land_em_Widget:
         axs[1, 0].plot(T, Y[:, model_em.monitor_indices('INa')])
         axs[1, 0].legend((r"Default", r"$new$"))
         axs[1, 0].set(ylabel="I_Na")
-        axs[1, 1].plot(T, Y[:, model_em.monitor_indices('INa')])
+        #axs[1, 1].plot(T, Y[:, model_em.monitor_indices('ICaL')])
+        axs[1, 1].plot(T, I_CaL)
         axs[1, 1].legend((r"Default", r"$new$"))
-        axs[1, 1].set(ylabel="I_Na")
+        axs[1, 1].set(ylabel="ICaL")
   
 
         plt.subplots_adjust(left=0.1,
