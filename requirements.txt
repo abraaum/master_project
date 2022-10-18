@@ -1,0 +1,7 @@
+gotran
+jupyter
+numpy
+tqdm
+matplotlib
+scipy
+ipywidgets
