@@ -1316,7 +1316,8 @@ def rhs(states, t, parameters, values=None):
     zna = 1.0
     JncxNa_i = E3_i * k4pp_i - E2_i * k3pp_i + 3.0 * E4_i * k7_i - 3.0 * E1_i * k8_i
     JncxCa_i = E2_i * k2_i - E1_i * k1_i
-    INaCa_i = 0.8 * (Gncx * Gncx_rate) * (zca * JncxCa_i + zna * JncxNa_i) * allo_i
+    Gncx = Gncx * Gncx_rate
+    INaCa_i = 0.8 * Gncx * (zca * JncxCa_i + zna * JncxNa_i) * allo_i
 
     # Expressions for the INaCa_ss component
     h1 = 1 + (1 + hna) * nass / kna3
@@ -1354,7 +1355,7 @@ def rhs(states, t, parameters, values=None):
     allo_ss = 1.0 / (1.0 + math.pow(KmCaAct / cass, 2.0))
     JncxNa_ss = E3_ss * k4pp - E2_ss * k3pp + 3.0 * E4_ss * k7 - 3.0 * E1_ss * k8
     JncxCa_ss = E2_ss * k2 - E1_ss * k1
-    INaCa_ss = 0.2 * (Gncx * Gncx_rate) * (zca * JncxCa_ss + zna * JncxNa_ss) * allo_ss
+    INaCa_ss = 0.2 * Gncx * (zca * JncxCa_ss + zna * JncxNa_ss) * allo_ss
 
     # Expressions for the INaK component
     Knai = Knai0 * math.exp(0.3333333333333333 * F * delta * v / (R * T))
@@ -2038,9 +2039,10 @@ def monitor(states, t, parameters, monitored=None):
         - 3.0 * monitored[145] * monitored[150]
     )
     monitored[157] = monitored[135] * monitored[151] - monitored[134] * monitored[150]
+    Gncx = Gncx * Gncx_rate
     monitored[158] = (
         0.8
-        * (Gncx * Gncx_rate)
+        * Gncx
         * (monitored[155] * monitored[156] + zca * monitored[157])
         * monitored[154]
     )
@@ -2104,7 +2106,7 @@ def monitor(states, t, parameters, monitored=None):
     monitored[193] = monitored[172] * monitored[188] - monitored[171] * monitored[187]
     monitored[194] = (
         0.2
-        * (Gncx * Gncx_rate)
+        * Gncx
         * (monitored[155] * monitored[192] + zca * monitored[193])
         * monitored[191]
     )
