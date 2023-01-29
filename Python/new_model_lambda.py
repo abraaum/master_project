@@ -1879,7 +1879,7 @@ def rhs(states, t, parameters, values=None):
     )
     
     #Fv = visc*dLambda, dont actually need to calculate this
-    Fse = -Kse*(lmbda-1) #(lambda - 1)=C, 
+    Fse = Kse*(lmbda-lmbda_0) #(lambda - 1)=C, 
     #Fpre = -Cp*math.exp(b_ff*(-0.5 + 0.5*(lmbda_0*lmbda_0))) # -Fp(lambda_0)
     Fpre = -(
         Cp

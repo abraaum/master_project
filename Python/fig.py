@@ -97,10 +97,39 @@ def run_lam_plots(lmbda=1.18918919, lambda_0=True):
     ax[3].set_xlabel(f'Time (ms), lambda={lmbda}')
     plt.show()
 
+def compare_isometric():
+    for l in lmbdavals:
+        force_dyn = []
+        force_stat = []
+        p_dyn = model_mm.init_parameter_values(
+            lmbda_0=l,Kse=1e6
+            )
+        p_stat = model.init_parameter_values(lmbda=l)
+        init_dyn = model_mm.init_state_values(lmbda=l)
+        init_stat = model.init_state_values()
+        for i in tqdm.tqdm(range(num_beats)):
+            s_dyn = odeint(model_mm.rhs, init_dyn, t, (p_dyn,))
+            init_dyn = s_dyn[-1]
+            s_stat = odeint(model.rhs, init_stat, t, (p_stat,))
+            init_stat = s_stat[-1] 
+        for tn,sn in zip(t,s_dyn):
+            m = model_mm.monitor(sn, tn, p_dyn)
+            force_dyn.append(m[force_ind])
+        pylab.plot(t, force_dyn, label=f'Dynamic, $\lambda$={l:3.2f}')
+        for tn,sn in zip(t,s_stat):
+            m = model.monitor(sn, tn, p_stat)
+            force_stat.append(m[force_ind])
+        pylab.plot(t, force_stat,':', label=f'Static, $\lambda$={l:3.2f}')
+    pylab.legend()
+    pylab.show()
+
+
+
 if __name__ == "__main__":
     #for l in lmbdavals:
     #    run_lam_plots(lmbda=l)
-    run_lam_mm(True)
-    run_lam_mm(False)
-    run_lam()
+    compare_isometric()
+    #run_lam_mm(True)
+    #run_lam_mm(False)
+    #run_lam()
 
