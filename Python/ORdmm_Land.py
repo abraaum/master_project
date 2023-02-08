@@ -165,6 +165,20 @@ def init_parameter_values(**values):
     # GNa_rate=1, Gto_rate=1, GKr_rate=1, GKs_rate=1, GK1_rate=1,
     # Gncx_rate=1, GKb_rate=1, GpCa_rate=1, GNaL_rate=1
 
+    #more HF
+    #Jleak_rate,
+    #Jserca_rate,
+    #CaMKa_rate,
+    
+    #PNak_rate,
+    #PNab_rate,
+    #PCab_rate
+
+    #Jrel_inf_sensitivity
+    #Jrel_infp_sensitivity
+    #thl_rate
+
+
     init_values = np.array(
         [
             1.018,
@@ -260,6 +274,15 @@ def init_parameter_values(**values):
             0.8,
             0.0005,
             0.07,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
             1,
             1,
             1,
@@ -378,6 +401,15 @@ def init_parameter_values(**values):
             ("GKb_rate", 99),
             ("GpCa_rate", 100),
             ("GNaL_rate", 101),
+            ("Jleak_rate", 102),
+            ("Jserca_rate", 103),
+            ("CaMKa_rate", 104),
+            ("Pnak_rate", 105),
+            ("Pnab_rate", 106),
+            ("Pcab_rate", 107),
+            ("thl_rate", 108),
+            ("Jrel_inf_sensitivity", 109),
+            ("Jrel_infp_sensitivity", 110),
         ]
     )
 
@@ -568,6 +600,15 @@ def parameter_indices(*params):
             ("GKb_rate", 99),
             ("GpCa_rate", 100),
             ("GNaL_rate", 101),
+            ("Jleak_rate", 102),
+            ("Jserca_rate", 103),
+            ("CaMKa_rate", 104),
+            ("Pnak_rate", 105),
+            ("Pnab_rate", 106),
+            ("Pcab_rate", 107),
+            ("thl_rate", 108),
+            ("Jrel_inf_sensitivity", 109),
+            ("Jrel_infp_sensitivity", 110),
         ]
     )
 
@@ -938,7 +979,7 @@ def rhs(states, t, parameters, values=None):
     cajsr = states[40]
 
     # Assign parameters
-    assert len(parameters) == 102
+    assert len(parameters) == 111
     scale_ICaL = parameters[0]
     scale_IK1 = parameters[1]
     scale_IKr = parameters[2]
@@ -1030,6 +1071,15 @@ def rhs(states, t, parameters, values=None):
     GKb_rate = parameters[99]
     GpCa_rate = parameters[100]
     GNaL_rate = parameters[101]
+    Jleak_rate = parameters[102]
+    Jserca_rate = parameters[103]
+    CaMKa_rate = parameters[104]
+    Pnak_rate = parameters[105]
+    Pnab_rate = parameters[106]
+    Pcab_rate = parameters[107]
+    thl_rate = parameters[108]
+    Jrel_inf_sensitivity = parameters[109]
+    Jrel_infp_sensitivity = parameters[110]
 
     # Init return args
     if values is None:
@@ -1048,7 +1098,7 @@ def rhs(states, t, parameters, values=None):
 
     # Expressions for the CaMKt component
     CaMKb = CaMKo * (1.0 - CaMKt) / (1.0 + KmCaM / cass)
-    CaMKa = CaMKb + CaMKt
+    CaMKa = (CaMKb + CaMKt)*CaMKa_rate
     values[0] = -bCaMK * CaMKt + aCaMK * (CaMKb + CaMKt) * CaMKb
 
     # Expressions for the reversal potentials component
@@ -1091,9 +1141,9 @@ def rhs(states, t, parameters, values=None):
     tjp = 1.46 * tj
     values[6] = (-jp + jss) / tjp
     fINap = 1.0 / (1.0 + KmCaMK / CaMKa)
-    GNa *= GNa_rate
+    tmp_GNa = GNa*GNa_rate
     INa = (
-        GNa * math.pow(m, 3.0) * (-ENa + v) * ((1.0 - fINap) * h * j + fINap * hp * jp)
+        tmp_GNa * math.pow(m, 3.0) * (-ENa + v) * ((1.0 - fINap) * h * j + fINap * hp * jp)
     )
 
     # Expressions for the INaL component
@@ -1101,9 +1151,10 @@ def rhs(states, t, parameters, values=None):
     tmL = tm
     values[7] = (-mL + mLss) / tmL
     hLss = 1.0 / (1.0 + 120578.15595522427 * math.exp(0.13354700854700854 * v))
-    values[8] = (-hL + hLss) / thL
+    tmp_thL = thL * thl_rate
+    values[8] = (-hL + hLss) / tmp_thL
     hLssp = 1.0 / (1.0 + 275969.2903869871 * math.exp(0.13354700854700854 * v))
-    thLp = 3.0 * thL
+    thLp = 3.0 * tmp_thL
     values[9] = (-hLp + hLssp) / thLp
     GNaL = (0.0075 * scale_INaL) * GNaL_rate
     if celltype==1:
@@ -1147,12 +1198,12 @@ def rhs(states, t, parameters, values=None):
     values[15] = (-iSp + iss) / tiSp
     ip = AiF * iFp + AiS * iSp
     fItop = 1.0 / (1.0 + KmCaMK / CaMKa)
-    Gto *= Gto_rate
+    tmp_Gto = Gto*Gto_rate
     if celltype==1:
-        Gto = Gto*4.0
+        tmp_Gto = tmp_Gto*4.0
     elif celltype==2:
-        Gto = Gto*4.0
-    Ito = Gto * (-EK + v) * ((1.0 - fItop) * a * i + ap * fItop * ip)
+        tmp_Gto = tmp_Gto*4.0
+    Ito = tmp_Gto * (-EK + v) * ((1.0 - fItop) * a * i + ap * fItop * ip)
 
     # Expressions for the ICaL ICaNa ICaK component
     dss = 1.0 / (1.0 + 0.39398514226669484 * math.exp(-0.23640661938534277 * v))
@@ -1339,12 +1390,12 @@ def rhs(states, t, parameters, values=None):
     zna = 1.0
     JncxNa_i = E3_i * k4pp_i - E2_i * k3pp_i + 3.0 * E4_i * k7_i - 3.0 * E1_i * k8_i
     JncxCa_i = E2_i * k2_i - E1_i * k1_i
-    Gncx = Gncx * Gncx_rate
+    tmp_Gncx = Gncx * Gncx_rate
     if celltype==1:
-        Gncx = Gncx*1.1
+        tmp_Gncx = tmp_Gncx*1.1
     elif celltype==2:
-        Gncx = Gncx*1.4
-    INaCa_i = 0.8 * Gncx * (zca * JncxCa_i + zna * JncxNa_i) * allo_i
+        tmp_Gncx = tmp_Gncx*1.4
+    INaCa_i = 0.8 * tmp_Gncx * (zca * JncxCa_i + zna * JncxNa_i) * allo_i
 
     # Expressions for the INaCa_ss component
     h1 = 1 + (1 + hna) * nass / kna3
@@ -1382,7 +1433,7 @@ def rhs(states, t, parameters, values=None):
     allo_ss = 1.0 / (1.0 + math.pow(KmCaAct / cass, 2.0))
     JncxNa_ss = E3_ss * k4pp - E2_ss * k3pp + 3.0 * E4_ss * k7 - 3.0 * E1_ss * k8
     JncxCa_ss = E2_ss * k2 - E1_ss * k1
-    INaCa_ss = 0.2 * Gncx * (zca * JncxCa_ss + zna * JncxNa_ss) * allo_ss
+    INaCa_ss = 0.2 * tmp_Gncx * (zca * JncxCa_ss + zna * JncxNa_ss) * allo_ss
 
     # Expressions for the INaK component
     Knai = Knai0 * math.exp(0.3333333333333333 * F * delta * v / (R * T))
@@ -1422,34 +1473,35 @@ def rhs(states, t, parameters, values=None):
     E4 = x4 / (x1 + x2 + x3 + x4)
     JnakNa = 3.0 * E1 * a3 - 3.0 * E2 * b3
     JnakK = 2.0 * E4 * b1 - 2.0 * E3 * a1
+    tmp_Pnak = Pnak*Pnak_rate
     if celltype==1:
-        Pnak = Pnak*0.9
+        tmp_Pnak = tmp_Pnak*0.9
     elif celltype==2:
-        Pnak = Pnak*0.7
-    INaK = Pnak * (zk * JnakK + zna * JnakNa)
+        tmp_Pnak = tmp_Pnak*0.7
+    INaK = tmp_Pnak * (zk * JnakK + zna * JnakNa)
 
     # Expressions for the IKb component
     xkb = 1.0 / (1.0 + 2.202363450949239 * math.exp(-0.05452562704471101 * v))
-    GKb *= GKb_rate
+    tmp_GKb = GKb*GKb_rate
     if celltype==1:
-        GKb = GKb*0.6
-    IKb = GKb * (-EK + v) * xkb
+        tmp_GKb = tmp_GKb*0.6
+    IKb = tmp_GKb * (-EK + v) * xkb
 
     # Expressions for the INab component
-    INab = PNab * (-nao + math.exp(vfrt) * nai) * vffrt / (-1.0 + math.exp(vfrt))
+    INab = (PNab*Pnab_rate) * (-nao + math.exp(vfrt) * nai) * vffrt / (-1.0 + math.exp(vfrt))
 
     # Expressions for the ICab component
     ICab = (
         4.0
-        * PCab
+        * (PCab*Pcab_rate)
         * (-0.341 * cao + cai * math.exp(2.0 * vfrt))
         * vffrt
         / (-1.0 + math.exp(2.0 * vfrt))
     )
 
     # Expressions for the IpCa component
-    GpCa *= GpCa_rate
-    IpCa = GpCa * cai / (0.0005 + cai)
+    tmp_GpCa = GpCa*GpCa_rate
+    IpCa = tmp_GpCa * cai / (0.0005 + cai)
 
     # Expressions for the Isac (Pueyo)--> ns + k component
     Isac_P_ns = 0
@@ -1488,7 +1540,8 @@ def rhs(states, t, parameters, values=None):
 
     # Expressions for the ryanodione receptor component
     a_rel = 0.5 * bt
-    Jrel_inf = -ICaL * a_rel / (1.0 + 25.62890625 * math.pow(1.0 / cajsr, 8.0))
+    #Jrel_inf = -ICaL * a_rel / (1.0 + 25.62890625 * math.pow(1.0 / cajsr, 8.0))
+    Jrel_inf = -ICaL * a_rel / (1.0 + math.pow((1.5*Jrel_inf_sensitivity) / cajsr, 8.0))
     if celltype==2:
         Jrel_inf = Jrel_inf*1.7
     tau_rel_tmp = bt / (1.0 + 0.0123 / cajsr)
@@ -1496,7 +1549,8 @@ def rhs(states, t, parameters, values=None):
     values[31] = (-Jrelnp + Jrel_inf) / tau_rel
     btp = 1.25 * bt
     a_relp = 0.5 * btp
-    Jrel_infp = -ICaL * a_relp / (1.0 + 25.62890625 * math.pow(1.0 / cajsr, 8.0))
+    #Jrel_infp = -ICaL * a_relp / (1.0 + 25.62890625 * math.pow(1.0 / cajsr, 8.0))
+    Jrel_infp = -ICaL * a_relp / (1.0 + math.pow((1.5*Jrel_infp_sensitivity) / cajsr, 8.0))
     if celltype==2:
         Jrel_infp = Jrel_infp*1.7
     tau_relp_tmp = btp / (1.0 + 0.0123 / cajsr)
@@ -1512,13 +1566,18 @@ def rhs(states, t, parameters, values=None):
         Jupnp = Jupnp*1.3
         Jupp = Jupp*1.3
     fJupp = 1.0 / (1.0 + KmCaMK / CaMKa)
-    Jleak = 0.0002625 * cansr
-    Jup = -Jleak + (1.0 - fJupp) * Jupnp + Jupp * fJupp
+    Jleak = (0.0002625 * cansr)
+    tmp_Jleak = Jleak*Jleak_rate
+    Jserca = ((1.0 - fJupp) * Jupnp + Jupp * fJupp)
+    tmp_Jserca = Jserca*Jserca_rate
+    Jup = -tmp_Jleak + tmp_Jserca
     Jtr = 0.01 * cansr - 0.01 * cajsr
 
     # Expressions for the intracellular concentrations component
     if celltype==1:
-        cmdnmax = cmdnmax*1.3
+        tmp_cmdnmax = cmdnmax*1.3
+    else:
+        tmp_cmdnmax = cmdnmax
     values[33] = JdiffNa * vss / vmyo + (
         -INa - INaL - INab - Isac_P_ns / 3 - 3.0 * INaCa_i - 3.0 * INaK
     ) * Acap / (F * vmyo)
@@ -1529,7 +1588,7 @@ def rhs(states, t, parameters, values=None):
     values[36] = -JdiffK - Acap * ICaK / (F * vss)
     Bcai = 1.0 / (
         1.0
-        + cmdnmax * kmcmdn * math.pow(kmcmdn + cai, -2.0)
+        + tmp_cmdnmax * kmcmdn * math.pow(kmcmdn + cai, -2.0)
         + kmtrpn * trpnmax * math.pow(kmtrpn + cai, -2.0)
     )
     values[37] = (
@@ -1612,7 +1671,7 @@ def monitor(states, t, parameters, monitored=None):
     cajsr = states[40]
 
     # Assign parameters
-    assert len(parameters) == 102
+    assert len(parameters) == 111
     scale_ICaL = parameters[0]
     scale_IK1 = parameters[1]
     scale_IKr = parameters[2]
@@ -1705,6 +1764,15 @@ def monitor(states, t, parameters, monitored=None):
     GKb_rate = parameters[99]
     GpCa_rate = parameters[100]
     GNaL_rate = parameters[101]
+    Jleak_rate = parameters[102]
+    Jserca_rate = parameters[103]
+    CaMKa_rate = parameters[104]
+    Pnak_rate = parameters[105]
+    Pnab_rate = parameters[106]
+    Pcab_rate = parameters[107]
+    thl_rate = parameters[108]
+    Jrel_inf_sensitivity = parameters[109]
+    Jrel_infp_sensitivity = parameters[110]
 
     # Init return args
     if monitored is None:
@@ -1723,7 +1791,7 @@ def monitor(states, t, parameters, monitored=None):
 
     # Expressions for the CaMKt component
     monitored[7] = CaMKo * (1.0 - CaMKt) / (1.0 + KmCaM / cass)
-    monitored[8] = CaMKt + monitored[7]
+    monitored[8] = (CaMKt + monitored[7])*CaMKa_rate
     monitored[237] = -bCaMK * CaMKt + aCaMK * (CaMKt + monitored[7]) * monitored[7]
 
     # Expressions for the reversal potentials component
@@ -1768,9 +1836,9 @@ def monitor(states, t, parameters, monitored=None):
     monitored[21] = 1.46 * monitored[17]
     monitored[243] = (-jp + monitored[16]) / monitored[21]
     monitored[22] = 1.0 / (1.0 + KmCaMK / monitored[8])
-    GNa *= GNa_rate
+    tmp_GNa = GNa*GNa_rate
     monitored[23] = (
-        GNa
+        tmp_GNa
         * math.pow(m, 3.0)
         * (-monitored[115] + v)
         * (
@@ -1786,9 +1854,10 @@ def monitor(states, t, parameters, monitored=None):
     monitored[25] = monitored[10]
     monitored[244] = (-mL + monitored[24]) / monitored[25]
     monitored[26] = 1.0 / (1.0 + 120578.15595522427 * math.exp(0.13354700854700854 * v))
-    monitored[245] = (-hL + monitored[26]) / thL
+    tmp_thL = thL * thl_rate
+    monitored[245] = (-hL + monitored[26]) / tmp_thL
     monitored[27] = 1.0 / (1.0 + 275969.2903869871 * math.exp(0.13354700854700854 * v))
-    monitored[28] = 3.0 * thL
+    monitored[28] = 3.0 * tmp_thL
     monitored[246] = (-hLp + monitored[27]) / monitored[28]
     monitored[29] = (0.0075 * scale_INaL) * GNaL_rate
     if celltype==1:
@@ -1841,13 +1910,13 @@ def monitor(states, t, parameters, monitored=None):
     monitored[252] = (-iSp + monitored[34]) / monitored[44]
     monitored[45] = iFp * monitored[37] + iSp * monitored[38]
     monitored[46] = 1.0 / (1.0 + KmCaMK / monitored[8])
-    Gto *= Gto_rate
+    tmp_Gto = Gto*Gto_rate
     if celltype==1:
-        Gto = Gto*4.0
+        tmp_Gto = tmp_Gto*4.0
     elif celltype==2:
-        Gto = Gto*4.0
+        tmp_Gto = tmp_Gto*4.0
     monitored[47] = (
-        Gto
+        tmp_Gto
         * (-monitored[116] + v)
         * (
             (1.0 - monitored[46]) * a * monitored[39]
@@ -2104,14 +2173,14 @@ def monitor(states, t, parameters, monitored=None):
         - 3.0 * monitored[145] * monitored[150]
     )
     monitored[157] = monitored[135] * monitored[151] - monitored[134] * monitored[150]
-    Gncx = Gncx * Gncx_rate
+    tmp_Gncx = Gncx * Gncx_rate
     if celltype==1:
-        Gncx = Gncx*1.1
+        tmp_Gncx = tmp_Gncx*1.1
     elif celltype==2:
-        Gncx = Gncx*1.4
+        tmp_Gncx = tmp_Gncx*1.4
     monitored[158] = (
         0.8
-        * Gncx
+        * tmp_Gncx
         * (monitored[155] * monitored[156] + zca * monitored[157])
         * monitored[154]
     )
@@ -2175,7 +2244,7 @@ def monitor(states, t, parameters, monitored=None):
     monitored[193] = monitored[172] * monitored[188] - monitored[171] * monitored[187]
     monitored[194] = (
         0.2
-        * Gncx
+        * tmp_Gncx
         * (monitored[155] * monitored[192] + zca * monitored[193])
         * monitored[191]
     )
@@ -2268,24 +2337,25 @@ def monitor(states, t, parameters, monitored=None):
     monitored[215] = (
         2.0 * monitored[199] * monitored[213] - 2.0 * monitored[198] * monitored[212]
     )
+    tmp_Pnak = Pnak*Pnak_rate
     if celltype==1:
-        Pnak = Pnak*0.9
+        tmp_Pnak = tmp_Pnak*0.9
     elif celltype==2:
-        Pnak = Pnak*0.7
-    monitored[216] = Pnak * (monitored[155] * monitored[214] + zk * monitored[215])
+        tmp_Pnak = tmp_Pnak*0.7
+    monitored[216] = tmp_Pnak * (monitored[155] * monitored[214] + zk * monitored[215])
 
     # Expressions for the IKb component
     monitored[217] = 1.0 / (
         1.0 + 2.202363450949239 * math.exp(-0.05452562704471101 * v)
     )
-    GKb *= GKb_rate
+    tmp_GKb = GKb*GKb_rate
     if celltype==1:
-        GKb = GKb*0.6
-    monitored[218] = GKb * (-monitored[116] + v) * monitored[217]
+        tmp_GKb = tmp_GKb*0.6
+    monitored[218] = tmp_GKb * (-monitored[116] + v) * monitored[217]
 
     # Expressions for the INab component
     monitored[219] = (
-        PNab
+        (PNab*Pnab_rate)
         * (-nao + math.exp(monitored[119]) * nai)
         * monitored[118]
         / (-1.0 + math.exp(monitored[119]))
@@ -2294,15 +2364,15 @@ def monitor(states, t, parameters, monitored=None):
     # Expressions for the ICab component
     monitored[220] = (
         4.0
-        * PCab
+        * (PCab*Pcab_rate)
         * (-0.341 * cao + cai * math.exp(2.0 * monitored[119]))
         * monitored[118]
         / (-1.0 + math.exp(2.0 * monitored[119]))
     )
 
     # Expressions for the IpCa component
-    GpCa *= GpCa_rate
-    monitored[221] = GpCa * cai / (0.0005 + cai)
+    tmp_GpCa = GpCa*GpCa_rate
+    monitored[221] = tmp_GpCa * cai / (0.0005 + cai)
 
     # Expressions for the Isac (Pueyo)--> ns + k component
     monitored[222] = 0
@@ -2344,7 +2414,7 @@ def monitor(states, t, parameters, monitored=None):
     monitored[102] = (
         -monitored[101]
         * monitored[77]
-        / (1.0 + 25.62890625 * math.pow(1.0 / cajsr, 8.0))
+        / (1.0 + math.pow((1.5*Jrel_inf_sensitivity) / cajsr, 8.0))
     )
     if celltype==2:
         monitored[102] = monitored[102]*1.7
@@ -2356,7 +2426,7 @@ def monitor(states, t, parameters, monitored=None):
     monitored[107] = (
         -monitored[106]
         * monitored[77]
-        / (1.0 + 25.62890625 * math.pow(1.0 / cajsr, 8.0))
+        / (1.0 + math.pow((1.5*Jrel_infp_sensitivity) / cajsr, 8.0))
     )
     if celltype==2:
         monitored[107] = monitored[107]*1.7
@@ -2373,17 +2443,19 @@ def monitor(states, t, parameters, monitored=None):
         monitored[228] = monitored[228]*1.3
         monitored[229] = monitored[229]*1.3
     monitored[230] = 1.0 / (1.0 + KmCaMK / monitored[8])
-    monitored[231] = 0.0002625 * cansr
+    monitored[231] = (0.0002625 * cansr)*Jleak_rate
     monitored[232] = (
         -monitored[231]
-        + (1.0 - monitored[230]) * monitored[228]
-        + monitored[229] * monitored[230]
+        + ((1.0 - monitored[230]) * monitored[228]
+        + monitored[229] * monitored[230])*Jserca_rate
     )
     monitored[233] = 0.01 * cansr - 0.01 * cajsr
 
     # Expressions for the intracellular concentrations component
     if celltype==1:
-        cmdnmax = cmdnmax*1.3
+        tmp_cmdnmax = cmdnmax*1.3
+    else:
+        tmp_cmdnmax = cmdnmax
     monitored[270] = monitored[225] * monitored[6] / monitored[3] + (
         -monitored[219]
         - monitored[23]
@@ -2409,7 +2481,7 @@ def monitor(states, t, parameters, monitored=None):
     monitored[273] = -monitored[226] - monitored[2] * monitored[79] / (F * monitored[6])
     monitored[112] = 1.0 / (
         1.0
-        + cmdnmax * kmcmdn * math.pow(kmcmdn + cai, -2.0)
+        + tmp_cmdnmax * kmcmdn * math.pow(kmcmdn + cai, -2.0)
         + kmtrpn * trpnmax * math.pow(kmtrpn + cai, -2.0)
     )
     monitored[274] = (

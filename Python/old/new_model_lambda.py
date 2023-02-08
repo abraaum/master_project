@@ -1,9 +1,6 @@
 # Gotran generated code for the "ORdmm_Land_em_coupling" model
-# changed to temporary values for parameters scaling
-
-# TODO (not critical):
-# fix scaling for ALL rates
-# fix scaling for different celltypes
+# changed to temporary values for parameters scaling (electro+mech)
+# changed lambda (SL) 
 
 from __future__ import division
 
@@ -24,6 +21,9 @@ def init_state_values(**values):
     # XW=0, CaTrpn=1, TmB=1, Zetas=0, Zetaw=0, Cd=0, cai=0.0001
 
     #CaTrpn=0
+
+    #Added:
+    #lmbda=1
     init_values = np.array(
         [
             0,
@@ -74,6 +74,7 @@ def init_state_values(**values):
             0,
             0,
             0.0001,
+            1.027027027027027, #lmbda
         ],
         dtype=np.float_,
     )
@@ -129,6 +130,7 @@ def init_state_values(**values):
             ("Zetaw", 45),
             ("Cd", 46),
             ("cai", 47),
+            ("lmbda", 48),
         ]
     )
 
@@ -156,7 +158,7 @@ def init_parameter_values(**values):
     # Tot_A=25, Tref=120, Trpn50=0.35, calib=1, cat50_ref=0.805,
     # dLambda=0, emcoupling=1, etal=200, etas=20, gammas=0.0085,
     # gammaw=0.615, isacs=0, ktrpn=0.1, ku=0.04, kuw=0.182,
-    # kws=0.012, lmbda=1, mode=1, ntm=2.4, ntrpn=2, p_a=2.1,
+    # kws=0.012, lmbda_set=1, mode=1, ntm=2.4, ntrpn=2, p_a=2.1,
     # p_b=9.1, p_k=7, phi=2.23, rs=0.25, rw=0.5, CaMKo=0.05,
     # KmCaM=0.0015, KmCaMK=0.15, aCaMK=0.05, bCaMK=0.00068,
     # PKNa=0.01833, Gncx=0.0008, KmCaAct=0.00015, kasymm=12.5,
@@ -198,6 +200,14 @@ def init_parameter_values(**values):
 
     #mehanical implicit change (NOT ADDED)
     # kb_rate, kwu_rate, ksu_rate
+
+
+    # new params for contraction
+    # Fa, Fp, Fv, Fse, Fpre (different forces) make these into monitored 
+    # Cp, b_ff, visc, Kse make these into parameters
+
+    # parameter for isometric
+    # isometric = 0 for false
 
 
     init_values = np.array(
@@ -343,6 +353,11 @@ def init_parameter_values(**values):
             1,
             1,
             1,
+            0.1, #Cp
+            30.0, #bff
+            1.6216216216216215, #visc
+            1, #Kse
+            0, #isometric
         ],
         dtype=np.float_,
     )
@@ -393,7 +408,7 @@ def init_parameter_values(**values):
             ("ku", 40),
             ("kuw", 41),
             ("kws", 42),
-            ("lmbda", 43),
+            ("lmbda_set", 43),
             ("mode", 44),
             ("ntm", 45),
             ("ntrpn", 46),
@@ -491,6 +506,11 @@ def init_parameter_values(**values):
             ("Trpn50_rate", 138),
             ("gammaw_rate", 139),
             ("gammas_rate", 140),
+            ("Cp", 141),
+            ("b_ff", 142),
+            ("visc", 143),
+            ("Kse", 144),
+            ("isometric", 145),
         ]
     )
 
@@ -559,6 +579,7 @@ def state_indices(*states):
             ("Zetaw", 45),
             ("Cd", 46),
             ("cai", 47),
+            ("lmbda", 48),
         ]
     )
 
@@ -622,7 +643,7 @@ def parameter_indices(*params):
             ("ku", 40),
             ("kuw", 41),
             ("kws", 42),
-            ("lmbda", 43),
+            ("lmbda_set", 43),
             ("mode", 44),
             ("ntm", 45),
             ("ntrpn", 46),
@@ -720,6 +741,11 @@ def parameter_indices(*params):
             ("Trpn50_rate", 138),
             ("gammaw_rate", 139),
             ("gammas_rate", 140),
+            ("Cp", 141),
+            ("b_ff", 142),
+            ("visc", 143),
+            ("Kse", 144),
+            ("isometric", 145),
         ]
     )
 
@@ -1049,6 +1075,12 @@ def monitor_indices(*monitored):
             ("dZetaw_dt", 306),
             ("dCd_dt", 307),
             ("dcai_dt", 308),
+            ("Fa", 309),
+            ("Fp", 310),
+            ("Fv", 311),
+            ("Fse", 312),
+            ("Fpre", 313),
+            ("dLambda_dt", 314),
         ]
     )
 
@@ -1069,7 +1101,7 @@ def rhs(states, t, parameters, values=None):
     """
 
     # Assign states
-    assert len(states) == 48
+    assert len(states) == 49
     (
         CaMKt,
         m,
@@ -1119,10 +1151,11 @@ def rhs(states, t, parameters, values=None):
         Zetaw,
         Cd,
         cai,
+        lmbda,
     ) = states
 
     # Assign parameters
-    assert len(parameters) == 141
+    assert len(parameters) == 146
     scale_ICaL = parameters[0]
     scale_IK1 = parameters[1]
     scale_IKr = parameters[2]
@@ -1148,8 +1181,10 @@ def rhs(states, t, parameters, values=None):
     tjca = parameters[22]
     zca = parameters[23]
     bt = parameters[24]
+    Beta0 = parameters[25]
     Beta1 = parameters[26]
     Tot_A = parameters[27]
+    Tref = parameters[28]
     Trpn50 = parameters[29]
     cat50_ref = parameters[31]
     dLambda = parameters[32]
@@ -1161,7 +1196,7 @@ def rhs(states, t, parameters, values=None):
     ku = parameters[40]
     kuw = parameters[41]
     kws = parameters[42]
-    lmbda = parameters[43]
+    lmbda_set = parameters[43]
     ntm = parameters[45]
     ntrpn = parameters[46]
     p_k = parameters[49]
@@ -1251,13 +1286,17 @@ def rhs(states, t, parameters, values=None):
     Trpn50_rate = parameters[138]
     gammaw_rate = parameters[139]
     gammas_rate = parameters[140]
-
+    Cp = parameters[141]
+    b_ff = parameters[142]
+    visc = parameters[143]
+    Kse = parameters[144]
+    isometric = parameters[145]
 
     # Init return args
     if values is None:
-        values = np.zeros((48,), dtype=np.float_)
+        values = np.zeros((49,), dtype=np.float_)
     else:
-        assert isinstance(values, np.ndarray) and values.shape == (48,)
+        assert isinstance(values, np.ndarray) and values.shape == (49,)
 
     # Expressions for the cell geometry component
     vcell = 3140.0 * L * (rad * rad)
@@ -1657,10 +1696,10 @@ def rhs(states, t, parameters, values=None):
 
     # Expressions for the IKb component
     xkb = 1.0 / (1.0 + 2.202363450949239 * math.exp(-0.05452562704471101 * v))
-    GKb *= GKb_rate
+    tmp_GKb = GKb*GKb_rate
     if celltype==1:
-        GKb = GKb*0.6
-    IKb = GKb * (-EK + v) * xkb
+        tmp_GKb = tmp_GKb*0.6
+    IKb = tmp_GKb * (-EK + v) * xkb
 
     # Expressions for the INab component
     INab = (PNab*Pnab_rate) * (-nao + math.exp(vfrt) * nai) * vffrt / (-1.0 + math.exp(vfrt))
@@ -1675,8 +1714,8 @@ def rhs(states, t, parameters, values=None):
     )
 
     # Expressions for the IpCa component
-    GpCa *= GpCa_rate
-    IpCa = GpCa * cai / (0.0005 + cai)
+    tmp_GpCa = GpCa*GpCa_rate
+    IpCa = tmp_GpCa * cai / (0.0005 + cai)
 
     # Expressions for the Isac (Pueyo)--> ns + k component
     Isac_P_ns = 0
@@ -1717,20 +1756,25 @@ def rhs(states, t, parameters, values=None):
     a_rel = 0.5 * bt
     #Jrel_inf = -ICaL * a_rel / (1.0 + 25.62890625 * math.pow(1.0 / cajsr, 8.0))
     Jrel_inf = -ICaL * a_rel / (1.0 + math.pow((1.5*Jrel_inf_sensitivity) / cajsr, 8.0))
+    
     if celltype==2:
-        Jrel_inf = Jrel_inf*1.7
+        tmp_Jrel_inf = Jrel_inf*1.7
+    else:
+        tmp_Jrel_inf = Jrel_inf
     tau_rel_tmp = bt / (1.0 + 0.0123 / cajsr)
     tau_rel = 0.001 if tau_rel_tmp < 0.001 else tau_rel_tmp
-    values[31] = (-Jrelnp + Jrel_inf) / tau_rel
+    values[31] = (-Jrelnp + tmp_Jrel_inf) / tau_rel
     btp = 1.25 * bt
     a_relp = 0.5 * btp
     #Jrel_infp = -ICaL * a_relp / (1.0 + 25.62890625 * math.pow(1.0 / cajsr, 8.0))
     Jrel_infp = -ICaL * a_relp / (1.0 + math.pow((1.5*Jrel_infp_sensitivity) / cajsr, 8.0))
     if celltype==2:
-        Jrel_infp = Jrel_infp*1.7
+        tmp_Jrel_infp = Jrel_infp*1.7
+    else:
+        tmp_Jrel_infp = Jrel_infp
     tau_relp_tmp = btp / (1.0 + 0.0123 / cajsr)
     tau_relp = 0.001 if tau_relp_tmp < 0.001 else tau_relp_tmp
-    values[32] = (-Jrelp + Jrel_infp) / tau_relp
+    values[32] = (-Jrelp + tmp_Jrel_infp) / tau_relp
     fJrelp = 1.0 / (1.0 + KmCaMK / tmp_CaMKa)
     Jrel = (1.0 - fJrelp) * Jrelnp + Jrelp * fJrelp
 
@@ -1738,19 +1782,24 @@ def rhs(states, t, parameters, values=None):
     Jupnp = 0.004375 * cai / (0.00092 + cai)
     Jupp = 0.01203125 * cai / (0.00075 + cai)
     if celltype==1:
-        Jupnp = Jupnp*1.3
-        Jupp = Jupp*1.3
+        tmp_Jupnp = Jupnp*1.3
+        tmp_Jupp = Jupp*1.3
+    else:
+        tmp_Jupnp = Jupnp
+        tmp_Jupp = Jupp
     fJupp = 1.0 / (1.0 + KmCaMK / tmp_CaMKa)
     Jleak = (0.0002625 * cansr)
     tmp_Jleak = Jleak*Jleak_rate
-    Jserca = ((1.0 - fJupp) * Jupnp + Jupp * fJupp)
+    Jserca = ((1.0 - fJupp) * tmp_Jupnp + tmp_Jupp * fJupp)
     tmp_Jserca = Jserca*Jserca_rate
     Jup = -tmp_Jleak + tmp_Jserca
     Jtr = 0.01 * cansr - 0.01 * cajsr
 
     # Expressions for the intracellular concentrations component
     if celltype==1:
-        cmdnmax = cmdnmax*1.3
+        tmp_cmdnmax = cmdnmax*1.3
+    else:
+        tmp_cmdnmax = cmdnmax
     values[33] = JdiffNa * vss / vmyo + (
         -INa - INaL - INab - Isac_P_ns / 3 - 3.0 * INaCa_i - 3.0 * INaK
     ) * Acap / (F * vmyo)
@@ -1783,7 +1832,12 @@ def rhs(states, t, parameters, values=None):
     As = Aw
     cw = tmp_kuw * phi * (1 - rw) / rw
     cs = tmp_kws * phi * rw * (1 - rs) / rs
-    lambda_min12 = lmbda if lmbda < 1.2 else 1.2
+
+    lambda_min12 = lmbda if lmbda < 1.2 else 1.2 #123 SL
+    lambda_min087 = lambda_min12 if lambda_min12 < 0.87 else 0.87 # 124 SL
+    h_lambda_prima = 1 + Beta0 * (-1.87 + lambda_min12 + lambda_min087) # 125 SL
+    h_lambda = h_lambda_prima if h_lambda_prima > 0 else 0 # 126 SL
+
     XU = 1 - TmB - XS - XW
     gammawu = (gammaw*gammaw_rate) * math.fabs(Zetaw)
     gammasu = (gammas*gammas_rate) * (
@@ -1794,11 +1848,8 @@ def rhs(states, t, parameters, values=None):
     values[40] = tmp_kws * XW - XS * gammasu - XS * ksu
     values[41] = tmp_kuw * XU - tmp_kws * XW - XW * gammawu - XW * kwu
     cat50 = cat50_ref + Beta1 * (-1 + lambda_min12)
-    # CATRPN
     values[42] = (ktrpn*ktrpn_rate) * (-CaTrpn + math.pow(1000 * cai / cat50, (ntrpn*ntrpn_rate)) * (1 - CaTrpn))
     kb = tmp_ku * math.pow((Trpn50*Trpn50_rate), ntm) / (1 - rs - rw * (1 - rs))
-
-
     values[43] = (
         math.pow(CaTrpn, -ntm / 2) if math.pow(CaTrpn, -ntm / 2) < 100 else 100
     ) * XU * kb - tmp_ku * math.pow(CaTrpn, ntm / 2) * TmB
@@ -1808,7 +1859,7 @@ def rhs(states, t, parameters, values=None):
     dCd = -Cd + C
     eta = etas if dCd < 0 else etal
     values[46] = p_k * (-Cd + C) / eta
-    Bcai = 1.0 / (1.0 + cmdnmax * kmcmdn * math.pow(kmcmdn + cai, -2.0))
+    Bcai = 1.0 / (1.0 + tmp_cmdnmax * kmcmdn * math.pow(kmcmdn + cai, -2.0))
     J_TRPN = trpnmax * values[42]
     values[47] = (
         -J_TRPN
@@ -1816,6 +1867,36 @@ def rhs(states, t, parameters, values=None):
         - Jup * vnsr / vmyo
         + 0.5 * (-ICab - IpCa - Isac_P_ns / 3 + 2.0 * INaCa_i) * Acap / (F * vmyo)
     ) * Bcai
+
+
+    Fa = Tref * ((1 + Zetas) * XS + XW * Zetaw) * h_lambda / rs 
+    Fp = (
+        Cp
+        * b_ff
+        * (-0.5 + 0.5 * (lmbda * lmbda))
+        * math.exp(
+            b_ff * ((-0.5 + 0.5 * (lmbda * lmbda)) * (-0.5 + 0.5 * (lmbda * lmbda)))
+        )
+    )
+    #Fv = visc*dLambda, dont actually need to calculate this
+    Fse = Kse*(lmbda-lmbda_set) 
+    Fpre = -(
+        Cp
+        * b_ff
+        * (-0.5 + 0.5 * (lmbda_set * lmbda_set))
+        * math.exp(
+            b_ff * ((-0.5 + 0.5 * (lmbda_set * lmbda_set)) * (-0.5 + 0.5 * (lmbda_set * lmbda_set)))
+        )
+    )
+    
+    tot_force = - Fa - Fp - Fse - Fpre #Should FSE be changed -> +
+
+    if isometric==0:
+        dLambda = tot_force/visc
+    else:
+        dLambda = 0 
+    
+    values[48] = dLambda
 
     # Return results
     return values
@@ -1827,7 +1908,7 @@ def monitor(states, t, parameters, monitored=None):
     """
 
     # Assign states
-    assert len(states) == 48
+    assert len(states) == 49
     (
         CaMKt,
         m,
@@ -1877,10 +1958,12 @@ def monitor(states, t, parameters, monitored=None):
         Zetaw,
         Cd,
         cai,
+        lmbda,
+
     ) = states
 
     # Assign parameters
-    assert len(parameters) == 141
+    assert len(parameters) == 146
     scale_ICaL = parameters[0]
     scale_IK1 = parameters[1]
     scale_IKr = parameters[2]
@@ -1921,7 +2004,7 @@ def monitor(states, t, parameters, monitored=None):
     ku = parameters[40]
     kuw = parameters[41]
     kws = parameters[42]
-    lmbda = parameters[43]
+    lmbda_set = parameters[43]
     ntm = parameters[45]
     ntrpn = parameters[46]
     p_a = parameters[47]
@@ -2013,13 +2096,18 @@ def monitor(states, t, parameters, monitored=None):
     Trpn50_rate = parameters[138]
     gammaw_rate = parameters[139]
     gammas_rate = parameters[140]
+    Cp = parameters[141]
+    b_ff = parameters[142]
+    visc = parameters[143]
+    Kse = parameters[144]
+    isometric = parameters[145]
 
 
     # Init return args
     if monitored is None:
-        monitored = np.zeros((309,), dtype=np.float_)
+        monitored = np.zeros((315,), dtype=np.float_)
     else:
-        assert isinstance(monitored, np.ndarray) and monitored.shape == (309,)
+        assert isinstance(monitored, np.ndarray) and monitored.shape == (315,)
 
     # Expressions for the cell geometry component
     monitored[0] = 3140.0 * L * (rad * rad)
@@ -2590,10 +2678,10 @@ def monitor(states, t, parameters, monitored=None):
     monitored[244] = 1.0 / (
         1.0 + 2.202363450949239 * math.exp(-0.05452562704471101 * v)
     )
-    GKb *= GKb_rate
+    tmp_GKb = GKb*GKb_rate
     if celltype==1:
-        GKb = GKb*0.6
-    monitored[245] = GKb * (-monitored[143] + v) * monitored[244]
+        tmp_GKb = tmp_GKb*0.6
+    monitored[245] = tmp_GKb * (-monitored[143] + v) * monitored[244]
 
     # Expressions for the INab component
     monitored[246] = (
@@ -2613,8 +2701,8 @@ def monitor(states, t, parameters, monitored=None):
     )
 
     # Expressions for the IpCa component
-    GpCa *= GpCa_rate
-    monitored[248] = GpCa * cai / (0.0005 + cai)
+    tmp_GpCa = GpCa*GpCa_rate
+    monitored[248] = tmp_GpCa * cai / (0.0005 + cai)
 
     # Expressions for the Isac (Pueyo)--> ns + k component
     monitored[249] = 0
@@ -2659,10 +2747,12 @@ def monitor(states, t, parameters, monitored=None):
         / (1.0 + math.pow((1.5*Jrel_inf_sensitivity) / cajsr, 8.0))
     )
     if celltype==2:
-        monitored[102] = monitored[102]*1.7
+        tmp_Jrel_inf = monitored[102]*1.7
+    else:
+        tmp_Jrel_inf = monitored[102]
     monitored[103] = bt / (1.0 + 0.0123 / cajsr)
     monitored[104] = 0.001 if monitored[103] < 0.001 else monitored[103]
-    monitored[292] = (-Jrelnp + monitored[102]) / monitored[104]
+    monitored[292] = (-Jrelnp + tmp_Jrel_inf) / monitored[104]
     monitored[105] = 1.25 * bt
     monitored[106] = 0.5 * monitored[105]
     monitored[107] = (
@@ -2671,10 +2761,12 @@ def monitor(states, t, parameters, monitored=None):
         / (1.0 + math.pow((1.5*Jrel_infp_sensitivity) / cajsr, 8.0))
     )
     if celltype==2:
-        monitored[107] = monitored[107]*1.7
+        tmp_Jrel_infp = monitored[107]*1.7
+    else:
+        tmp_Jrel_infp = monitored[107]
     monitored[108] = monitored[105] / (1.0 + 0.0123 / cajsr)
     monitored[109] = 0.001 if monitored[108] < 0.001 else monitored[108]
-    monitored[293] = (-Jrelp + monitored[107]) / monitored[109]
+    monitored[293] = (-Jrelp + tmp_Jrel_infp) / monitored[109]
     monitored[110] = 1.0 / (1.0 + KmCaMK / monitored[8])
     monitored[111] = (1.0 - monitored[110]) * Jrelnp + Jrelp * monitored[110]
 
@@ -2682,20 +2774,25 @@ def monitor(states, t, parameters, monitored=None):
     monitored[255] = 0.004375 * cai / (0.00092 + cai)
     monitored[256] = 0.01203125 * cai / (0.00075 + cai)
     if celltype==1:
-        monitored[255] = monitored[255]*1.3
-        monitored[256] = monitored[256]*1.3
+        tmp_Jupnp = monitored[255]*1.3
+        tmp_Jupp = monitored[256]*1.3
+    else:
+        tmp_Jupnp = monitored[255]
+        tmp_Jupp = monitored[256]
     monitored[257] = 1.0 / (1.0 + KmCaMK / monitored[8])
     monitored[258] = (0.0002625 * cansr)*Jleak_rate
     monitored[259] = (
         -monitored[258]
-        + ((1.0 - monitored[257]) * monitored[255]
-        + monitored[256] * monitored[257])*Jserca_rate
+        + ((1.0 - monitored[257]) * tmp_Jupnp
+        + tmp_Jupp * monitored[257])*Jserca_rate
     )
     monitored[260] = 0.01 * cansr - 0.01 * cajsr
 
     # Expressions for the intracellular concentrations component
     if celltype==1:
-        cmdnmax = cmdnmax*1.3
+        tmp_cmdnmax = cmdnmax*1.3
+    else:
+        tmp_cmdnmax = cmdnmax
     monitored[294] = monitored[252] * monitored[6] / monitored[3] + (
         -monitored[23]
         - monitored[246]
@@ -2751,10 +2848,12 @@ def monitor(states, t, parameters, monitored=None):
     monitored[120] = monitored[119]
     monitored[121] = tmp_kuw * phi * (1 - rw) / rw
     monitored[122] = tmp_kws * phi * rw * (1 - rs) / rs
-    monitored[123] = lmbda if lmbda < 1.2 else 1.2
-    monitored[124] = monitored[123] if monitored[123] < 0.87 else 0.87
-    monitored[125] = 1 + Beta0 * (-1.87 + monitored[123] + monitored[124])
-    monitored[126] = monitored[125] if monitored[125] > 0 else 0
+
+    monitored[123] = lmbda if lmbda < 1.2 else 1.2 #SL
+    monitored[124] = monitored[123] if monitored[123] < 0.87 else 0.87 #SL
+    monitored[125] = 1 + Beta0 * (-1.87 + monitored[123] + monitored[124]) #SL
+    monitored[126] = monitored[125] if monitored[125] > 0 else 0 #SL
+
     monitored[127] = 1 - TmB - XS - XW
     monitored[128] = (gammaw*gammaw_rate) * math.fabs(Zetaw)
     monitored[129] = (gammas*gammas_rate) * (
@@ -2786,7 +2885,7 @@ def monitor(states, t, parameters, monitored=None):
     monitored[137] = -1 + math.exp(p_b * monitored[133])
     monitored[138] = p_a * (monitored[136] + monitored[137])
     monitored[139] = monitored[132] + monitored[138]
-    monitored[140] = 1.0 / (1.0 + cmdnmax * kmcmdn * math.pow(kmcmdn + cai, -2.0))
+    monitored[140] = 1.0 / (1.0 + tmp_cmdnmax * kmcmdn * math.pow(kmcmdn + cai, -2.0))
     monitored[141] = trpnmax * monitored[303]
     monitored[308] = (
         -monitored[141]
@@ -2797,6 +2896,34 @@ def monitor(states, t, parameters, monitored=None):
         * monitored[2]
         / (F * monitored[3])
     ) * monitored[140]
+
+    monitored[309] = Tref * ((1 + Zetas) * XS + XW * Zetaw) * monitored[126] / rs
+    monitored[310] = (
+        Cp
+        * b_ff
+        * (-0.5 + 0.5 * (lmbda * lmbda))
+        * math.exp(
+            b_ff * ((-0.5 + 0.5 * (lmbda * lmbda)) * (-0.5 + 0.5 * (lmbda * lmbda)))
+        )
+    )
+    #monitored[311] = visc*dLambda, dont actually need to calculate this
+    monitored[312] = Kse*(lmbda-lmbda_set) 
+    monitored[313]= -(
+        Cp
+        * b_ff
+        * (-0.5 + 0.5 * (lmbda_set * lmbda_set))
+        * math.exp(
+            b_ff * ((-0.5 + 0.5 * (lmbda_set * lmbda_set)) * (-0.5 + 0.5 * (lmbda_set * lmbda_set)))
+        )
+    )
+    tot_force = - monitored[309] - monitored[310] - monitored[312] - monitored[313] # should monitored[312] be changed -> + 
+
+    if isometric==0:
+        dLambda = tot_force/visc
+    else:
+        dLambda = 0 
+
+    monitored[314] = dLambda
 
     # Return results
     return monitored

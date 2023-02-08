@@ -1,14 +1,14 @@
-import new_model_lambda as model_mm
-import new_model as model
+import ORdmm_Land_em_coupling as model
 from scipy.integrate import odeint
 import numpy as np 
 import pylab
 import matplotlib.pyplot as plt
 import tqdm
+import old.new_model as model_iso
 
-import importlib
-importlib.reload(model_mm)
-importlib.reload(model)
+#import importlib
+#importlib.reload(model_mm)
+#importlib.reload(model)
 
 
 t = np.arange(0.0, 1000.0, 0.1)
@@ -21,30 +21,25 @@ lmbdavals = SLvals/1.85
 #lmbdavals = [1.08108108, 1.13513514, 1.18918919, 1.24324324]
 force_ind = model.monitor_indices("Ta")     
 
-def run_lam_mm(lambda_0=True):
+def run_lam():
     for l in lmbdavals:
         force = []
-        if lambda_0 == True:
-            p = model_mm.init_parameter_values(
-                lmbda_0=1,
-                )
-        else: 
-            p = model_mm.init_parameter_values(
-                lmbda_0=l,
-                )
-        init = model_mm.init_state_values(lmbda=l)
+        p = model.init_parameter_values(
+            lmbda_set=l,
+            )
+        init = model.init_state_values(lmbda=l)
         for i in tqdm.tqdm(range(num_beats)):
-            s = odeint(model_mm.rhs, init, t, (p,))
+            s = odeint(model.rhs, init, t, (p,))
             init = s[-1] 
         for tn,sn in zip(t,s):
-            m = model_mm.monitor(sn, tn, p)
+            m = model.monitor(sn, tn, p)
             force.append(m[force_ind])
         pylab.plot(t, force, label=l)
     pylab.legend()
     pylab.show()
 
 
-def run_lam():
+def run_lam_isometric():
     for l in lmbdavals:
         force = []
         p = model.init_parameter_values(
@@ -63,10 +58,10 @@ def run_lam():
 
 
 
-def run_lam_plots(lmbda=1.18918919, lambda_0=True):
+def run_lam_plots(lmbda=1.18918919, lambda_set=True):
     init = model.init_state_values(lmbda=lmbda)
-    if lambda_0 == True:
-        p = model.init_parameter_values(lmbda_0=lmbda)
+    if lambda_set == True:
+        p = model.init_parameter_values(lmbda_set=lmbda)
     else: 
         p = model.init_parameter_values()
 
@@ -99,29 +94,46 @@ def run_lam_plots(lmbda=1.18918919, lambda_0=True):
 
 def compare_isometric():
     for l in lmbdavals:
-        force_dyn = []
+        force_dyn1 = []
+        force_dyn2 = []
         force_stat = []
-        p_dyn = model_mm.init_parameter_values(
-            lmbda_0=l,Kse=1e6
+        p_dyn1 = model.init_parameter_values(
+            lmbda_set=l,Kse=1e6
             )
-        p_stat = model.init_parameter_values(lmbda=l)
-        init_dyn = model_mm.init_state_values(lmbda=l)
-        init_stat = model.init_state_values()
+        p_dyn2 = model.init_parameter_values(
+            lmbda_set=l,isometric=1
+            )
+        p_stat = model_iso.init_parameter_values(lmbda=l)
+        init_dyn1 = model.init_state_values(lmbda=l)
+
+        init_dyn2 = model.init_state_values(lmbda=l)
+
+        init_stat = model_iso.init_state_values()
         for i in tqdm.tqdm(range(num_beats)):
-            s_dyn = odeint(model_mm.rhs, init_dyn, t, (p_dyn,))
-            init_dyn = s_dyn[-1]
-            s_stat = odeint(model.rhs, init_stat, t, (p_stat,))
+            s_dyn1 = odeint(model.rhs, init_dyn1, t, (p_dyn1,))
+            init_dyn1 = s_dyn1[-1]
+
+            s_dyn2 = odeint(model.rhs, init_dyn2, t, (p_dyn2,))
+            init_dyn2 = s_dyn2[-1]
+
+            s_stat = odeint(model_iso.rhs, init_stat, t, (p_stat,))
             init_stat = s_stat[-1] 
-        for tn,sn in zip(t,s_dyn):
-            m = model_mm.monitor(sn, tn, p_dyn)
-            force_dyn.append(m[force_ind])
-        pylab.plot(t, force_dyn, label=f'Dynamic, $\lambda$={l:3.2f}')
+        for tn,sn in zip(t,s_dyn1):
+            m = model.monitor(sn, tn, p_dyn1)
+            force_dyn1.append(m[force_ind])
+        pylab.plot(t, force_dyn1, '*', label=f'Dynamic1, $\lambda$={l:3.2f}')
+        for tn,sn in zip(t,s_dyn2):
+            m = model.monitor(sn, tn, p_dyn2)
+            force_dyn2.append(m[force_ind])
+        pylab.plot(t, force_dyn2, label=f'Dynamic2, $\lambda$={l:3.2f}')
         for tn,sn in zip(t,s_stat):
-            m = model.monitor(sn, tn, p_stat)
+            m = model_iso.monitor(sn, tn, p_stat)
             force_stat.append(m[force_ind])
         pylab.plot(t, force_stat,':', label=f'Static, $\lambda$={l:3.2f}')
     pylab.legend()
     pylab.show()
+
+
 
 
 
@@ -131,5 +143,4 @@ if __name__ == "__main__":
     compare_isometric()
     #run_lam_mm(True)
     #run_lam_mm(False)
-    #run_lam()
 

@@ -1,10 +1,6 @@
 # Gotran generated code for the "ORdmm_Land_em_coupling" model
-# changed to temporary values for parameters scaling
-# TESTING LAMBDA 
-
-# TODO (not critical):
-# fix scaling for ALL rates
-# fix scaling for different celltypes
+# changed to temporary values for parameters scaling (electro + mech)
+# model can be used to doublecheck isometric contraction
 
 from __future__ import division
 
@@ -25,9 +21,6 @@ def init_state_values(**values):
     # XW=0, CaTrpn=1, TmB=1, Zetas=0, Zetaw=0, Cd=0, cai=0.0001
 
     #CaTrpn=0
-
-    #Added:
-    #lmbda=1
     init_values = np.array(
         [
             0,
@@ -78,7 +71,6 @@ def init_state_values(**values):
             0,
             0,
             0.0001,
-            1.027027027027027, #lmbda
         ],
         dtype=np.float_,
     )
@@ -134,7 +126,6 @@ def init_state_values(**values):
             ("Zetaw", 45),
             ("Cd", 46),
             ("cai", 47),
-            ("lmbda", 48),
         ]
     )
 
@@ -162,7 +153,7 @@ def init_parameter_values(**values):
     # Tot_A=25, Tref=120, Trpn50=0.35, calib=1, cat50_ref=0.805,
     # dLambda=0, emcoupling=1, etal=200, etas=20, gammas=0.0085,
     # gammaw=0.615, isacs=0, ktrpn=0.1, ku=0.04, kuw=0.182,
-    # kws=0.012, lmbda_0=1, mode=1, ntm=2.4, ntrpn=2, p_a=2.1,
+    # kws=0.012, lmbda=1, mode=1, ntm=2.4, ntrpn=2, p_a=2.1,
     # p_b=9.1, p_k=7, phi=2.23, rs=0.25, rw=0.5, CaMKo=0.05,
     # KmCaM=0.0015, KmCaMK=0.15, aCaMK=0.05, bCaMK=0.00068,
     # PKNa=0.01833, Gncx=0.0008, KmCaAct=0.00015, kasymm=12.5,
@@ -204,11 +195,6 @@ def init_parameter_values(**values):
 
     #mehanical implicit change (NOT ADDED)
     # kb_rate, kwu_rate, ksu_rate
-
-
-    # new params for contraction
-    # Fa, Fp, Fv, Fse, Fpre (different forces) make these into monitored 
-    # Cp, b_ff, visc, Kse make these into parameters
 
 
     init_values = np.array(
@@ -354,10 +340,6 @@ def init_parameter_values(**values):
             1,
             1,
             1,
-            0.1, #Cp
-            30.0, #bff
-            1.6216216216216215, #visc
-            1, #Kse
         ],
         dtype=np.float_,
     )
@@ -408,7 +390,7 @@ def init_parameter_values(**values):
             ("ku", 40),
             ("kuw", 41),
             ("kws", 42),
-            ("lmbda_0", 43),
+            ("lmbda", 43),
             ("mode", 44),
             ("ntm", 45),
             ("ntrpn", 46),
@@ -506,10 +488,6 @@ def init_parameter_values(**values):
             ("Trpn50_rate", 138),
             ("gammaw_rate", 139),
             ("gammas_rate", 140),
-            ("Cp", 141),
-            ("b_ff", 142),
-            ("visc", 143),
-            ("Kse", 144),
         ]
     )
 
@@ -578,7 +556,6 @@ def state_indices(*states):
             ("Zetaw", 45),
             ("Cd", 46),
             ("cai", 47),
-            ("lmbda", 48),
         ]
     )
 
@@ -642,7 +619,7 @@ def parameter_indices(*params):
             ("ku", 40),
             ("kuw", 41),
             ("kws", 42),
-            ("lmbda_0", 43),
+            ("lmbda", 43),
             ("mode", 44),
             ("ntm", 45),
             ("ntrpn", 46),
@@ -740,10 +717,6 @@ def parameter_indices(*params):
             ("Trpn50_rate", 138),
             ("gammaw_rate", 139),
             ("gammas_rate", 140),
-            ("Cp", 141),
-            ("b_ff", 142),
-            ("visc", 143),
-            ("Kse", 144),
         ]
     )
 
@@ -1073,12 +1046,6 @@ def monitor_indices(*monitored):
             ("dZetaw_dt", 306),
             ("dCd_dt", 307),
             ("dcai_dt", 308),
-            ("Fa", 309),
-            ("Fp", 310),
-            ("Fv", 311),
-            ("Fse", 312),
-            ("Fpre", 313),
-            ("dLambda_dt", 314),
         ]
     )
 
@@ -1099,7 +1066,7 @@ def rhs(states, t, parameters, values=None):
     """
 
     # Assign states
-    assert len(states) == 49
+    assert len(states) == 48
     (
         CaMKt,
         m,
@@ -1149,11 +1116,10 @@ def rhs(states, t, parameters, values=None):
         Zetaw,
         Cd,
         cai,
-        lmbda,
     ) = states
 
     # Assign parameters
-    assert len(parameters) == 145
+    assert len(parameters) == 141
     scale_ICaL = parameters[0]
     scale_IK1 = parameters[1]
     scale_IKr = parameters[2]
@@ -1179,10 +1145,8 @@ def rhs(states, t, parameters, values=None):
     tjca = parameters[22]
     zca = parameters[23]
     bt = parameters[24]
-    Beta0 = parameters[25]
     Beta1 = parameters[26]
     Tot_A = parameters[27]
-    Tref = parameters[28]
     Trpn50 = parameters[29]
     cat50_ref = parameters[31]
     dLambda = parameters[32]
@@ -1194,7 +1158,7 @@ def rhs(states, t, parameters, values=None):
     ku = parameters[40]
     kuw = parameters[41]
     kws = parameters[42]
-    lmbda_0 = parameters[43]
+    lmbda = parameters[43]
     ntm = parameters[45]
     ntrpn = parameters[46]
     p_k = parameters[49]
@@ -1284,16 +1248,13 @@ def rhs(states, t, parameters, values=None):
     Trpn50_rate = parameters[138]
     gammaw_rate = parameters[139]
     gammas_rate = parameters[140]
-    Cp = parameters[141]
-    b_ff = parameters[142]
-    visc = parameters[143]
-    Kse = parameters[144]
+
 
     # Init return args
     if values is None:
-        values = np.zeros((49,), dtype=np.float_)
+        values = np.zeros((48,), dtype=np.float_)
     else:
-        assert isinstance(values, np.ndarray) and values.shape == (49,)
+        assert isinstance(values, np.ndarray) and values.shape == (48,)
 
     # Expressions for the cell geometry component
     vcell = 3140.0 * L * (rad * rad)
@@ -1693,10 +1654,10 @@ def rhs(states, t, parameters, values=None):
 
     # Expressions for the IKb component
     xkb = 1.0 / (1.0 + 2.202363450949239 * math.exp(-0.05452562704471101 * v))
-    GKb *= GKb_rate
+    tmp_GKb = GKb*GKb_rate
     if celltype==1:
-        GKb = GKb*0.6
-    IKb = GKb * (-EK + v) * xkb
+        tmp_GKb = tmp_GKb*0.6
+    IKb = tmp_GKb * (-EK + v) * xkb
 
     # Expressions for the INab component
     INab = (PNab*Pnab_rate) * (-nao + math.exp(vfrt) * nai) * vffrt / (-1.0 + math.exp(vfrt))
@@ -1711,8 +1672,8 @@ def rhs(states, t, parameters, values=None):
     )
 
     # Expressions for the IpCa component
-    GpCa *= GpCa_rate
-    IpCa = GpCa * cai / (0.0005 + cai)
+    tmp_GpCa = GpCa*GpCa_rate
+    IpCa = tmp_GpCa * cai / (0.0005 + cai)
 
     # Expressions for the Isac (Pueyo)--> ns + k component
     Isac_P_ns = 0
@@ -1752,10 +1713,7 @@ def rhs(states, t, parameters, values=None):
     # Expressions for the ryanodione receptor component
     a_rel = 0.5 * bt
     #Jrel_inf = -ICaL * a_rel / (1.0 + 25.62890625 * math.pow(1.0 / cajsr, 8.0))
-    #POWER
     Jrel_inf = -ICaL * a_rel / (1.0 + math.pow((1.5*Jrel_inf_sensitivity) / cajsr, 8.0))
-    #Jrel_inf = -ICaL * a_rel / (1.0 + ((1.5*Jrel_inf_sensitivity)/cajsr)**8.0)
-    
     if celltype==2:
         Jrel_inf = Jrel_inf*1.7
     tau_rel_tmp = bt / (1.0 + 0.0123 / cajsr)
@@ -1789,7 +1747,9 @@ def rhs(states, t, parameters, values=None):
 
     # Expressions for the intracellular concentrations component
     if celltype==1:
-        cmdnmax = cmdnmax*1.3
+        tmp_cmdnmax = cmdnmax*1.3
+    else:
+        tmp_cmdnmax = cmdnmax
     values[33] = JdiffNa * vss / vmyo + (
         -INa - INaL - INab - Isac_P_ns / 3 - 3.0 * INaCa_i - 3.0 * INaK
     ) * Acap / (F * vmyo)
@@ -1822,12 +1782,7 @@ def rhs(states, t, parameters, values=None):
     As = Aw
     cw = tmp_kuw * phi * (1 - rw) / rw
     cs = tmp_kws * phi * rw * (1 - rs) / rs
-
-    lambda_min12 = lmbda if lmbda < 1.2 else 1.2 #123 SL
-    lambda_min087 = lambda_min12 if lambda_min12 < 0.87 else 0.87 # 124 SL
-    h_lambda_prima = 1 + Beta0 * (-1.87 + lambda_min12 + lambda_min087) # 125 SL
-    h_lambda = h_lambda_prima if h_lambda_prima > 0 else 0 # 126 SL
-
+    lambda_min12 = lmbda if lmbda < 1.2 else 1.2
     XU = 1 - TmB - XS - XW
     gammawu = (gammaw*gammaw_rate) * math.fabs(Zetaw)
     gammasu = (gammas*gammas_rate) * (
@@ -1838,24 +1793,21 @@ def rhs(states, t, parameters, values=None):
     values[40] = tmp_kws * XW - XS * gammasu - XS * ksu
     values[41] = tmp_kuw * XU - tmp_kws * XW - XW * gammawu - XW * kwu
     cat50 = cat50_ref + Beta1 * (-1 + lambda_min12)
+    # CATRPN
     values[42] = (ktrpn*ktrpn_rate) * (-CaTrpn + math.pow(1000 * cai / cat50, (ntrpn*ntrpn_rate)) * (1 - CaTrpn))
     kb = tmp_ku * math.pow((Trpn50*Trpn50_rate), ntm) / (1 - rs - rw * (1 - rs))
-    #POWER
+
+
     values[43] = (
         math.pow(CaTrpn, -ntm / 2) if math.pow(CaTrpn, -ntm / 2) < 100 else 100
     ) * XU * kb - tmp_ku * math.pow(CaTrpn, ntm / 2) * TmB
-    """
-    values[43] = (
-        (CaTrpn**(-ntm / 2)) if (CaTrpn**(-ntm / 2)) < 100 else 100
-    ) * XU * kb - tmp_ku * math.pow(CaTrpn, ntm / 2) * TmB
-    """ 
     values[44] = dLambda * As - Zetas * cs
     values[45] = dLambda * Aw - Zetaw * cw
     C = -1 + lambda_min12
     dCd = -Cd + C
     eta = etas if dCd < 0 else etal
     values[46] = p_k * (-Cd + C) / eta
-    Bcai = 1.0 / (1.0 + cmdnmax * kmcmdn * math.pow(kmcmdn + cai, -2.0))
+    Bcai = 1.0 / (1.0 + tmp_cmdnmax * kmcmdn * math.pow(kmcmdn + cai, -2.0))
     J_TRPN = trpnmax * values[42]
     values[47] = (
         -J_TRPN
@@ -1863,39 +1815,6 @@ def rhs(states, t, parameters, values=None):
         - Jup * vnsr / vmyo
         + 0.5 * (-ICab - IpCa - Isac_P_ns / 3 + 2.0 * INaCa_i) * Acap / (F * vmyo)
     ) * Bcai
-
-
-     # SL start
-    Fa = Tref * ((1 + Zetas) * XS + XW * Zetaw) * h_lambda / rs 
-
-    #Fp = Cp*math.exp(b_ff*(-0.5 + 0.5*(lmbda*lmbda)))
-    Fp = (
-        Cp
-        * b_ff
-        * (-0.5 + 0.5 * (lmbda * lmbda))
-        * math.exp(
-            b_ff * ((-0.5 + 0.5 * (lmbda * lmbda)) * (-0.5 + 0.5 * (lmbda * lmbda)))
-        )
-    )
-    
-    #Fv = visc*dLambda, dont actually need to calculate this
-    Fse = Kse*(lmbda-lmbda_0) #(lambda - 1)=C, 
-    #Fpre = -Cp*math.exp(b_ff*(-0.5 + 0.5*(lmbda_0*lmbda_0))) # -Fp(lambda_0)
-    Fpre = -(
-        Cp
-        * b_ff
-        * (-0.5 + 0.5 * (lmbda_0 * lmbda_0))
-        * math.exp(
-            b_ff * ((-0.5 + 0.5 * (lmbda_0 * lmbda_0)) * (-0.5 + 0.5 * (lmbda_0 * lmbda_0)))
-        )
-    )
-    
-    
-    tot_force = - Fa - Fp - Fse - Fpre 
-    dLambda = tot_force/visc 
-    
-    values[48] = dLambda
-    # SL end
 
     # Return results
     return values
@@ -1907,7 +1826,7 @@ def monitor(states, t, parameters, monitored=None):
     """
 
     # Assign states
-    assert len(states) == 49
+    assert len(states) == 48
     (
         CaMKt,
         m,
@@ -1957,12 +1876,10 @@ def monitor(states, t, parameters, monitored=None):
         Zetaw,
         Cd,
         cai,
-        lmbda,
-
     ) = states
 
     # Assign parameters
-    assert len(parameters) == 145
+    assert len(parameters) == 141
     scale_ICaL = parameters[0]
     scale_IK1 = parameters[1]
     scale_IKr = parameters[2]
@@ -2003,7 +1920,7 @@ def monitor(states, t, parameters, monitored=None):
     ku = parameters[40]
     kuw = parameters[41]
     kws = parameters[42]
-    lmbda_0 = parameters[43]
+    lmbda = parameters[43]
     ntm = parameters[45]
     ntrpn = parameters[46]
     p_a = parameters[47]
@@ -2095,17 +2012,13 @@ def monitor(states, t, parameters, monitored=None):
     Trpn50_rate = parameters[138]
     gammaw_rate = parameters[139]
     gammas_rate = parameters[140]
-    Cp = parameters[141]
-    b_ff = parameters[142]
-    visc = parameters[143]
-    Kse = parameters[144]
 
 
     # Init return args
     if monitored is None:
-        monitored = np.zeros((315,), dtype=np.float_)
+        monitored = np.zeros((309,), dtype=np.float_)
     else:
-        assert isinstance(monitored, np.ndarray) and monitored.shape == (315,)
+        assert isinstance(monitored, np.ndarray) and monitored.shape == (309,)
 
     # Expressions for the cell geometry component
     monitored[0] = 3140.0 * L * (rad * rad)
@@ -2676,10 +2589,10 @@ def monitor(states, t, parameters, monitored=None):
     monitored[244] = 1.0 / (
         1.0 + 2.202363450949239 * math.exp(-0.05452562704471101 * v)
     )
-    GKb *= GKb_rate
+    tmp_GKb = GKb*GKb_rate
     if celltype==1:
-        GKb = GKb*0.6
-    monitored[245] = GKb * (-monitored[143] + v) * monitored[244]
+        tmp_GKb = tmp_GKb*0.6
+    monitored[245] = tmp_GKb * (-monitored[143] + v) * monitored[244]
 
     # Expressions for the INab component
     monitored[246] = (
@@ -2699,8 +2612,8 @@ def monitor(states, t, parameters, monitored=None):
     )
 
     # Expressions for the IpCa component
-    GpCa *= GpCa_rate
-    monitored[248] = GpCa * cai / (0.0005 + cai)
+    tmp_GpCa = GpCa*GpCa_rate
+    monitored[248] = tmp_GpCa * cai / (0.0005 + cai)
 
     # Expressions for the Isac (Pueyo)--> ns + k component
     monitored[249] = 0
@@ -2781,7 +2694,9 @@ def monitor(states, t, parameters, monitored=None):
 
     # Expressions for the intracellular concentrations component
     if celltype==1:
-        cmdnmax = cmdnmax*1.3
+        tmp_cmdnmax = cmdnmax*1.3
+    else:
+        tmp_cmdnmax = cmdnmax
     monitored[294] = monitored[252] * monitored[6] / monitored[3] + (
         -monitored[23]
         - monitored[246]
@@ -2837,12 +2752,10 @@ def monitor(states, t, parameters, monitored=None):
     monitored[120] = monitored[119]
     monitored[121] = tmp_kuw * phi * (1 - rw) / rw
     monitored[122] = tmp_kws * phi * rw * (1 - rs) / rs
-
-    monitored[123] = lmbda if lmbda < 1.2 else 1.2 #SL
-    monitored[124] = monitored[123] if monitored[123] < 0.87 else 0.87 #SL
-    monitored[125] = 1 + Beta0 * (-1.87 + monitored[123] + monitored[124]) #SL
-    monitored[126] = monitored[125] if monitored[125] > 0 else 0 #SL
-
+    monitored[123] = lmbda if lmbda < 1.2 else 1.2
+    monitored[124] = monitored[123] if monitored[123] < 0.87 else 0.87
+    monitored[125] = 1 + Beta0 * (-1.87 + monitored[123] + monitored[124])
+    monitored[126] = monitored[125] if monitored[125] > 0 else 0
     monitored[127] = 1 - TmB - XS - XW
     monitored[128] = (gammaw*gammaw_rate) * math.fabs(Zetaw)
     monitored[129] = (gammas*gammas_rate) * (
@@ -2874,7 +2787,7 @@ def monitor(states, t, parameters, monitored=None):
     monitored[137] = -1 + math.exp(p_b * monitored[133])
     monitored[138] = p_a * (monitored[136] + monitored[137])
     monitored[139] = monitored[132] + monitored[138]
-    monitored[140] = 1.0 / (1.0 + cmdnmax * kmcmdn * math.pow(kmcmdn + cai, -2.0))
+    monitored[140] = 1.0 / (1.0 + tmp_cmdnmax * kmcmdn * math.pow(kmcmdn + cai, -2.0))
     monitored[141] = trpnmax * monitored[303]
     monitored[308] = (
         -monitored[141]
@@ -2885,38 +2798,6 @@ def monitor(states, t, parameters, monitored=None):
         * monitored[2]
         / (F * monitored[3])
     ) * monitored[140]
-
-
-    # start SL
-    monitored[309] = Tref * ((1 + Zetas) * XS + XW * Zetaw) * monitored[126] / rs # Rice (1)
-
-    #monitored[310] = Cp*math.exp(b_ff*(-0.5 + 0.5*(lmbda*lmbda)))
-    monitored[310] = (
-        Cp
-        * b_ff
-        * (-0.5 + 0.5 * (lmbda * lmbda))
-        * math.exp(
-            b_ff * ((-0.5 + 0.5 * (lmbda * lmbda)) * (-0.5 + 0.5 * (lmbda * lmbda)))
-        )
-    )
-   
-    #monitored[311] = visc*dLambda, dont actually need to calculate this
-    monitored[312] = -Kse*(lmbda-1)# (lambda - 1)=C=monitored[133] 
-    #monitored[313]= -Cp*math.exp(b_ff*(-0.5 + 0.5*(lmbda_0*lmbda_0))) # -Fp(lambda_0)
-    monitored[313]= -(
-        Cp
-        * b_ff
-        * (-0.5 + 0.5 * (lmbda_0 * lmbda_0))
-        * math.exp(
-            b_ff * ((-0.5 + 0.5 * (lmbda_0 * lmbda_0)) * (-0.5 + 0.5 * (lmbda_0 * lmbda_0)))
-        )
-    )
-   
-    tot_force = - monitored[309] - monitored[310] - monitored[312] - monitored[313] 
-    dLambda = tot_force/visc 
-
-    monitored[314] = dLambda
-    # end SL
 
     # Return results
     return monitored

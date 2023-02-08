@@ -222,6 +222,11 @@ class Ordmm_Land_em_Widget:
     def __init__(self):
         interact(
             self.solve_and_plot,
+            cell_type = Dropdown(
+                options={'m':2, 'epi': 1, 'endo': 0},
+                value=0,
+                description='Cell type:',
+            ),
             GNa_coeff=FloatSlider(
                 value=1,
                 min=0,
@@ -320,6 +325,7 @@ class Ordmm_Land_em_Widget:
 
     def solve_and_plot(
         self, 
+        cell_type,
         GNa_coeff, 
         Gto_coeff,
         GKr_coeff,
@@ -341,7 +347,7 @@ class Ordmm_Land_em_Widget:
         # print(GNa_coeff)
 
         # run model
-        parameters = model_em.init_parameter_values()
+        parameters = model_em.init_parameter_values(celltype=cell_type)
         y0 = model_em.init_state_values(CaTrpn=0.0092)
         T = np.linspace(0, 500, 501)
         Y = odeint(model_em.rhs, y0, T, args=(parameters,))
@@ -362,6 +368,7 @@ class Ordmm_Land_em_Widget:
 
         # parameters = model.init_parameter_values(Params_to_change)
         parameters = model_em.init_parameter_values(
+            celltype=cell_type,
             GNa_rate=GNa_coeff,
             Gto_rate=Gto_coeff,
             GKr_rate=GKr_coeff,
@@ -375,6 +382,148 @@ class Ordmm_Land_em_Widget:
         )
         y0 = model_em.init_state_values(CaTrpn=0.0092)
         T = np.linspace(0, 500, 501)
+        Y = odeint(model_em.rhs, y0, T, args=(parameters,))
+
+        monitor = np.array([model_em.monitor(r, t, parameters) for r, t in zip(Y, T)])
+        I_CaL_idx = model_em.monitor_indices('ICaL')
+        I_CaL = monitor.T[I_CaL_idx]
+
+        axs[0, 0].plot(T, Y[:, model_em.state_indices("v")])
+        axs[0, 0].legend((r"Default", r"$new$"))
+        axs[0, 0].set(ylabel="V(mV)")
+        axs[0, 1].plot(T, Y[:, model_em.state_indices("cai")])
+        axs[0, 1].legend((r"Default", r"$new$"))
+        axs[0, 1].set(ylabel="Ca_i(mM)")
+        axs[1, 0].plot(T, Y[:, model_em.monitor_indices('INa')])
+        axs[1, 0].legend((r"Default", r"$new$"))
+        axs[1, 0].set(ylabel="I_Na")
+        #axs[1, 1].plot(T, Y[:, model_em.monitor_indices('ICaL')])
+        axs[1, 1].plot(T, I_CaL)
+        axs[1, 1].legend((r"Default", r"$new$"))
+        axs[1, 1].set(ylabel="ICaL")
+  
+
+        plt.subplots_adjust(left=0.1,
+                    bottom=0.1,
+                    right=0.9,
+                    top=0.9,
+                    wspace=0.4,
+                    hspace=0.4)
+        plt.show()
+
+
+
+class Ordmm_Land_em_mech_Widget:
+    """A widget to solve the ORdmm_Land_em_coupled" model"""
+
+    # ----------------------------------------------------------------------------
+    # The widget
+
+    #mechanical parameters
+    # ku_rate, kuw_rate, kws_rate
+    # ktrpn, ntrpn, Trpn50_rate
+
+    # mechanical, unsure which
+    # gammaw_rate, gammas_rate -> gammawu_rate, gammasu_rate
+    
+
+    def __init__(self):
+        interact(
+            self.solve_and_plot,
+            cell_type = Dropdown(
+                options={'m':2, 'epi': 1, 'endo': 0},
+                value=0,
+                description='Cell type:',
+            ),
+            ku_coeff=FloatSlider(
+                value=1,
+                min=0,
+                max=12,
+                step=0.01,
+                description="ku rate",
+                continuous_update=False,
+                layout={'width': '600px'},
+                style={'description_width': '250px'},
+            ),
+            kuw_coeff=FloatSlider(
+                value=1,
+                min=0,
+                max=12,
+                step=0.01,
+                description="kuw rate",
+                continuous_update=False,
+                layout={'width': '600px'},
+                style={'description_width': '250px'},
+            ),
+            kws_coeff=FloatSlider(
+                value=1,
+                min=0,
+                max=12,
+                step=0.01,
+                description="kws rate",
+                continuous_update=False,
+                layout={'width': '600px'},
+                style={'description_width': '250px'},
+            ),
+        
+        )
+
+    # ----------------------------------------------------------------------------
+    # The run function
+
+    def solve_and_plot(
+        self, 
+        cell_type,
+        ku_coeff, 
+        kuw_coeff,
+        kws_coeff,
+
+    ):
+
+        # run model
+        parameters = model_em.init_parameter_values(celltype=cell_type)
+        y0 = model_em.init_state_values()
+        T = np.linspace(0, 1000, 1001)
+        Y = odeint(model_em.rhs, y0, T, args=(parameters,))
+
+        # Extract monitored values
+        monitor = np.array([model_em.monitor(r, t, parameters) for r, t in zip(Y, T)])
+        I_CaL_idx = model_em.monitor_indices('ICaL')
+        I_CaL = monitor.T[I_CaL_idx]
+
+        #ax[0].plot(tsteps, V)
+
+        fig, axs = plt.subplots(2, 2, figsize=(12,8))
+        axs[0, 0].plot(T, Y[:, model_em.state_indices("v")])
+        axs[0, 1].plot(T, Y[:, model_em.state_indices("cai")])
+        axs[1, 0].plot(T, Y[:, model_em.monitor_indices('INa')])
+        #axs[1, 1].plot(T, Y[:, model_em.monitor_indices('ICaL')])
+        axs[1, 1].plot(T, I_CaL)
+
+        # parameters = model.init_parameter_values(Params_to_change)
+        parameters = model_em.init_parameter_values(
+            celltype=cell_type,
+            GNaL_rate=1.80,
+            Gto_rate=0.40,
+            GK1_rate=0.68,
+            Gncx_rate=1.750,
+            Jleak_rate=1.30,
+            Jserca_rate=0.5,
+            CaMKa_rate=1.50,
+            Pnak_rate=0.70,
+            Pnab_rate=1,
+            Pcab_rate=1,
+            thl_rate=1.80,
+            Jrel_inf_sensitivity=0.80,
+            Jrel_infp_sensitivity=0.80,
+            # mechanical
+            ku_rate=ku_coeff,
+            kuw_rate=kuw_coeff,
+            kws_rate=kws_coeff,
+        )
+
+        y0 = model_em.init_state_values(CaTrpn=0.0092)
+        T = np.linspace(0, 1000, 1001)
         Y = odeint(model_em.rhs, y0, T, args=(parameters,))
 
         monitor = np.array([model_em.monitor(r, t, parameters) for r, t in zip(Y, T)])
