@@ -1,6 +1,7 @@
 import ORdmm_Land_em_coupling as model
 from scipy.integrate import odeint
 import numpy as np
+import os
 
 # import pylab
 import matplotlib.pyplot as plt
@@ -8,29 +9,31 @@ import tqdm
 import pandas as pd
 
 # TODO:
-# make small function to save everything from test_with_load_iso
-# into npy/maybe json files for easier testing of plots/tables etc
+# 1. make dict or another file to load different parameter sets
 
 
-inc = np.arange(0.8,1.201, 0.05).round(decimals=2)  # real run 0.01
-num_beats = 100  # real run 100-1000
-tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
-lamval = [0.9, 0.95, 1, 1.05, 1.1]  
-lamfile = ['090', '095', '100', '105', '110']
+inc = np.arange(0.8, 1.201, 0.1).round(decimals=2)  # real run 0.01
+num_beats = 2  # real run 100-1000
+tsteps = np.arange(0.0, 650.0, 0.1)  # real run 1000
+lamval = [0.9, 0.95, 1, 1.05, 1.1]
+lamfile = ["090", "095", "100", "105", "110"]
 
-def test_with_load_iso(hf_type, cell_type):
+
+def isometric_sensitivity(hf_type, cell_type, out=None):
     V_list, Cai_list, Ta_list, CaTrpn_list = [], [], [], []
 
     for l in range(len(lamval)):
         Vs, Cais, Tas, CaTrpns = [], [], [], []
         for i in range(len(inc)):
-            y_load = np.load(f"init_values/coupled/{hf_type}_{cell_type}_coupled_iso_{lamfile[l]}.npy")
+            y_load = np.load(
+                f"init_values/coupled/{hf_type}_{cell_type}_coupled_iso_{lamfile[l]}.npy"
+            )
             y0 = y_load[-1]
             parameters = model.init_parameter_values(
                 # CHANGE MANUALLY
-                celltype=0 if cell_type=='endo' else 1 if cell_type=='epi' else 2,
+                celltype=0 if cell_type == "endo" else 1 if cell_type == "epi" else 2,
                 isometric=1,
-                lmbda_set=lamval[l], 
+                lmbda_set=lamval[l],
                 # ku_rate=inc[i],
                 # kuw_rate=inc[i],
                 # kws_rate=inc[i],
@@ -64,55 +67,26 @@ def test_with_load_iso(hf_type, cell_type):
         Ta_list.append(Tas)
         CaTrpn_list.append(CaTrpns)
 
-    return V_list, Cai_list, Ta_list, CaTrpn_list
+    if out != None:
+        # save value to file in specific folder
+        # sens/...
+        if not os.path.isdir("sens"):
+            os.mkdir("sens")
 
+        d = {
+            "L": lamval,
+            "num_beats": num_beats,
+            "V": V_list,
+            "Cai": Cai_list,
+            "Ta": Ta_list,
+            "CaTrpn": CaTrpn_list,
+        }
 
-def isometric_sensitivity():
-    """Sensitivity analysis, isometric run
-    """
-    V_list, Cai_list, Ta_list, CaTrpn_list = [], [], [], []
-
-    for l in range(len(lamval)):
-        Vs, Cais, Tas, CaTrpns = [], [], [], []
-        for i in range(len(inc)):
-            y0 = model.init_state_values(lmbda=lamval[l])
-            parameters = model.init_parameter_values(
-                # CHANGE MANUALLY
-                celltype=0,
-                isometric=1,
-                lmbda_set=lamval[l], 
-                # ku_rate=inc[i],
-                # kuw_rate=inc[i],
-                # kws_rate=inc[i],
-                ktrpn_rate=inc[i],
-                # ntrpn_rate=inc[i],
-                # Trpn50_rate=inc[i],
-                # gammaw_rate=inc[i],
-                # gammas_rate=inc[i],
-            )
-
-            for n in tqdm.tqdm(range(num_beats)):
-                y = odeint(model.rhs, y0, tsteps, args=(parameters,))
-                y0 = y[-1]
-
-            monitor = np.array(
-                [model.monitor(r, t, parameters) for r, t in zip(y, tsteps)]
-            )
-
-            V = y.T[model.state_indices("v")]
-            Cai = y.T[model.state_indices("cai")]
-            Ta = monitor.T[model.monitor_indices("Ta")]
-            CaTrpn = y.T[model.state_indices("CaTrpn")]
-
-            Vs.append(V)
-            Cais.append(Cai)
-            Tas.append(Ta)
-            CaTrpns.append(CaTrpn)
-
-        V_list.append(Vs)
-        Cai_list.append(Cais)
-        Ta_list.append(Tas)
-        CaTrpn_list.append(CaTrpns)
+        path = os.path.join("sens", out)
+        np.save(path, d, allow_pickle=True)
+        # remember
+        # d2=np.load("path.npy", allow_pickle=True)
+        # d2.item().get('L')
 
     return V_list, Cai_list, Ta_list, CaTrpn_list
 
@@ -169,7 +143,7 @@ def isometric_sensitivity_df(V, Cai, Ta, CaTrpn, latex_table=False):
     index_names = []
     for l in range(len(lamval)):
         for i in range(len(inc)):
-            n = f"Lambda: {lamval[l]}, % ktrpn: {inc[i]}" # CHANGE MANUALLY
+            n = f"Lambda: {lamval[l]}, % ktrpn: {inc[i]}"  # CHANGE MANUALLY
             index_names.append(n)
 
     df = pd.DataFrame(data=data, index=index_names)
@@ -178,6 +152,32 @@ def isometric_sensitivity_df(V, Cai, Ta, CaTrpn, latex_table=False):
         df = df.to_latex()
 
     return df
+
+
+def load_sensitivity_values(filename):
+    """Blablabla
+    """
+    path = os.path.join("sens", filename)
+    all_values = np.load(path, allow_pickle=True)
+
+    L = all_values.item().get("L")
+    N = all_values.item().get("num_beats")
+
+    if L != [0.9, 0.95, 1.0, 1.05, 1.1]:
+        raise ValueError(
+            f"This is a test run, the lambda values ({L}) should be equal to [0.9, 0.95, 1.0, 1.05, 1.1]"
+        )
+    if N != 2:
+        raise ValueError(
+            f"This is a test run, the # of beats ({N}) should be equal to 100"
+        )
+
+    V = all_values.item().get("V")
+    Cai = all_values.item().get("Cai")
+    Ta = all_values.item().get("Ta")
+    CaTrpn = all_values.item().get("CaTrpn")
+
+    return V, Cai, Ta, CaTrpn
 
 
 def plot_isometric_sensitivity(V, Cai, Ta, CaTrpn):
@@ -203,7 +203,7 @@ def plot_isometric_sensitivity(V, Cai, Ta, CaTrpn):
         ax[2].set_title("Ta")
         ax[3].plot(inc, CaTrpn, label=f"lambda {lamval[l]}")
         ax[3].set_title("CaTrpn")
-        ax[3].set_xlabel(f"%ktrpn") # CHANGE MANUALLY
+        ax[3].set_xlabel(f"%ktrpn")  # CHANGE MANUALLY
 
         l += 1
 
@@ -226,7 +226,7 @@ def plot_isometric_sensitivity(V, Cai, Ta, CaTrpn):
         ax[2].set_title("Ta")
         ax[3].plot(inc, CaTrpn_t, label=f"lambda {lamval[l]}")
         ax[3].set_title("CaTrpn")
-        ax[3].set_xlabel(f"%ktrpn") # CHANGE MANUALLY
+        ax[3].set_xlabel(f"%ktrpn")  # CHANGE MANUALLY
 
         l += 1
 
@@ -235,9 +235,10 @@ def plot_isometric_sensitivity(V, Cai, Ta, CaTrpn):
 
 
 if __name__ == "__main__":
-    # isometric_sensitivity_markdown()
-    V, Cai, Ta, CaTrpn = test_with_load_iso(hf_type='control', cell_type='endo')
+    # V, Cai, Ta, CaTrpn = isometric_sensitivity(hf_type='control', cell_type='endo', out='test.npy')
+
+    V, Cai, Ta, CaTrpn = load_sensitivity_values("test.npy")
 
     df = isometric_sensitivity_df(V=V, Cai=Cai, Ta=Ta, CaTrpn=CaTrpn, latex_table=True)
     print(df)
-    plot_isometric_sensitivity(V=V, Cai=Cai, Ta=Ta, CaTrpn=CaTrpn)
+    # plot_isometric_sensitivity(V=V, Cai=Cai, Ta=Ta, CaTrpn=CaTrpn)
