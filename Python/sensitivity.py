@@ -12,9 +12,9 @@ import pandas as pd
 # 1. make dict or another file to load different parameter sets
 
 
-inc = np.arange(0.8, 1.201, 0.1).round(decimals=2)  # real run 0.01
+inc = np.arange(0.8, 1.201, 0.05).round(decimals=2)  # real run 0.01
 num_beats = 100  # real run 100-1000
-tsteps = np.arange(0.0, 850.0, 0.1)  # real run 1000
+tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
 lamval = [0.9, 0.95, 1, 1.05, 1.1]
 lamfile = ["090", "095", "100", "105", "110"]
 
@@ -246,7 +246,7 @@ def plot_isometric_sensitivity(V, Cai, Ta, CaTrpn):
 
 
 if __name__ == "__main__":
-    type_hf = ['gomez'] #'control', 
+    type_hf = ['gomez', 'control'] #, 
     params = ['ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas'] #
     # missing control: nothing
     # missing HF: everything
