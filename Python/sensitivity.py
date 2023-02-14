@@ -13,7 +13,7 @@ import pandas as pd
 
 
 inc = np.arange(0.8, 1.201, 0.05).round(decimals=2)  # real run 0.01
-num_beats = 100  # real run 100-1000
+num_beats = 10  # real run 100-1000
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
 lamval = [0.9, 0.95, 1, 1.05, 1.1]
 lamfile = ["090", "095", "100", "105", "110"]
