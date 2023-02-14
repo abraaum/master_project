@@ -13,13 +13,13 @@ import pandas as pd
 
 
 inc = np.arange(0.8, 1.201, 0.1).round(decimals=2)  # real run 0.01
-num_beats = 2  # real run 100-1000
-tsteps = np.arange(0.0, 650.0, 0.1)  # real run 1000
+num_beats = 100  # real run 100-1000
+tsteps = np.arange(0.0, 850.0, 0.1)  # real run 1000
 lamval = [0.9, 0.95, 1, 1.05, 1.1]
 lamfile = ["090", "095", "100", "105", "110"]
 
 
-def isometric_sensitivity(hf_type, cell_type, out=None):
+def isometric_sensitivity(hf_type, cell_type, mech_param, out=None):
     V_list, Cai_list, Ta_list, CaTrpn_list = [], [], [], []
 
     for l in range(len(lamval)):
@@ -30,18 +30,31 @@ def isometric_sensitivity(hf_type, cell_type, out=None):
             )
             y0 = y_load[-1]
             parameters = model.init_parameter_values(
-                # CHANGE MANUALLY
                 celltype=0 if cell_type == "endo" else 1 if cell_type == "epi" else 2,
                 isometric=1,
                 lmbda_set=lamval[l],
-                # ku_rate=inc[i],
-                # kuw_rate=inc[i],
-                # kws_rate=inc[i],
-                ktrpn_rate=inc[i],
-                # ntrpn_rate=inc[i],
-                # Trpn50_rate=inc[i],
-                # gammaw_rate=inc[i],
-                # gammas_rate=inc[i],
+                #mechanical parameters
+                ku_rate=inc[i] if mech_param=='ku' else 1,
+                kuw_rate=inc[i] if mech_param=='kuw' else 1,
+                kws_rate=inc[i] if mech_param=='kws' else 1,
+                ktrpn_rate=inc[i] if mech_param=='ktrpn' else 1,
+                Trpn50_rate=inc[i] if mech_param=='Trpn50' else 1,
+                gammaw_rate=inc[i] if mech_param=='gammaw' else 1,
+                gammas_rate=inc[i] if mech_param=='gammas' else 1,
+                #HF parameters
+                GNaL_rate=1.80 if hf_type=='gomez' else 1,
+                Gto_rate=0.40 if hf_type=='gomez' else 1,
+                GK1_rate=0.68 if hf_type=='gomez' else 1,
+                Gncx_rate=1.750 if hf_type=='gomez' else 1,
+                Jleak_rate=1.30 if hf_type=='gomez' else 1,
+                Jserca_rate=0.5 if hf_type=='gomez' else 1,
+                CaMKa_rate=1.50 if hf_type=='gomez' else 1,
+                Pnak_rate=0.70 if hf_type=='gomez' else 1,
+                Pnab_rate=1,
+                Pcab_rate=1,
+                thl_rate=1.80 if hf_type=='gomez' else 1,
+                Jrel_inf_sensitivity=0.80 if hf_type=='gomez' else 1,
+                Jrel_infp_sensitivity=0.80 if hf_type=='gomez' else 1,
             )
 
             for n in tqdm.tqdm(range(num_beats)):
@@ -84,9 +97,7 @@ def isometric_sensitivity(hf_type, cell_type, out=None):
 
         path = os.path.join("sens", out)
         np.save(path, d, allow_pickle=True)
-        # remember
-        # d2=np.load("path.npy", allow_pickle=True)
-        # d2.item().get('L')
+        print(f'Finished and saved {out}.')
 
     return V_list, Cai_list, Ta_list, CaTrpn_list
 
@@ -235,10 +246,22 @@ def plot_isometric_sensitivity(V, Cai, Ta, CaTrpn):
 
 
 if __name__ == "__main__":
-    # V, Cai, Ta, CaTrpn = isometric_sensitivity(hf_type='control', cell_type='endo', out='test.npy')
+    type_hf = ['gomez'] #'control', 
+    params = ['ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas'] #
+    # missing control: nothing
+    # missing HF: everything
 
-    V, Cai, Ta, CaTrpn = load_sensitivity_values("test.npy")
+    for i in range(len(type_hf)):
+        for j in range(len(params)):
+            V, Cai, Ta, CaTrpn = isometric_sensitivity(
+                hf_type=type_hf[i], 
+                cell_type='endo', 
+                mech_param=params[j], 
+                out=f'sens_iso_{type_hf[i]}_endo_{params[j]}.npy')
 
-    df = isometric_sensitivity_df(V=V, Cai=Cai, Ta=Ta, CaTrpn=CaTrpn, latex_table=True)
-    print(df)
+
+    #V, Cai, Ta, CaTrpn = load_sensitivity_values("test.npy")
+
+    #df = isometric_sensitivity_df(V=V, Cai=Cai, Ta=Ta, CaTrpn=CaTrpn, latex_table=True)
+    #print(df)
     # plot_isometric_sensitivity(V=V, Cai=Cai, Ta=Ta, CaTrpn=CaTrpn)
