@@ -25,10 +25,10 @@ def isometric_sensitivity(hf_type, cell_type, mech_param, out=None):
     for l in range(len(lamval)):
         Vs, Cais, Tas, CaTrpns = [], [], [], []
         for i in range(len(inc)):
-            y_load = np.load(
+            y0 = np.load(
                 f"init_values/coupled/{hf_type}_{cell_type}_coupled_iso_{lamfile[l]}.npy"
             )
-            y0 = y_load[-1]
+            #y0 = y_load[-1]
             parameters = model.init_parameter_values(
                 celltype=0 if cell_type == "endo" else 1 if cell_type == "epi" else 2,
                 isometric=1,

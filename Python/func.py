@@ -40,9 +40,9 @@ def run_Ordmm(parameters, num_beats=1000, out=None):
             os.mkdir("init_values")
         
         path = os.path.join("init_values", out)
-        np.save(path, y)
+        np.save(path, y0)
     
-    return y, tsteps
+    return y0, tsteps
 
 
 def run_Ordmm_Land(parameters, num_beats=1000, lam=1, out=None):
@@ -77,9 +77,9 @@ def run_Ordmm_Land(parameters, num_beats=1000, lam=1, out=None):
             os.mkdir("init_values/coupled")
         
         path = os.path.join("init_values/coupled", out)
-        np.save(path, y)
+        np.save(path, y0)
     
-    return y, tsteps
+    return y0, tsteps
 
 
 def get_init_param(hf_type='control', cell_type=0):
