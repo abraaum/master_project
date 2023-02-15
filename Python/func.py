@@ -127,7 +127,7 @@ def get_init_param(hf_type='control', cell_type=0):
     return init_param
 
 
-def get_init_param_coupled_iso(hf_type='control', cell_type=0, lam=1):
+def get_init_param_coupled(hf_type='control', cell_type=0, lam=1, iso=0):
     """
     NOT FINISHED
     Get control values and HF values for different type of cells and HF models.
@@ -143,14 +143,14 @@ def get_init_param_coupled_iso(hf_type='control', cell_type=0, lam=1):
         # control parameters
         init_param = model_coup.init_parameter_values(
             celltype=cell_type,
-            isometric=1,
+            isometric=iso,
             lmbda_set=lam,
             )
     if hf_type == 'gomez':
         # HF ionic remodelling, Gomez 2014 (table 1)
         init_param = model_coup.init_parameter_values(
             celltype=cell_type,
-            isometric=1,
+            isometric=iso,
             lmbda_set=lam,
             GNaL_rate=1.80,
             Gto_rate=0.40,
@@ -170,7 +170,7 @@ def get_init_param_coupled_iso(hf_type='control', cell_type=0, lam=1):
         # HF heterogenous transmural ionic remodelling, Gomez 2014 (table 2)
         init_param = model_coup.init_parameter_values(
             celltype=cell_type,
-            isometric=1,
+            isometric=iso,
             lmbda_set=lam,
             Gncx_rate=1.60,
             Jserca_rate=0.45,
@@ -180,7 +180,7 @@ def get_init_param_coupled_iso(hf_type='control', cell_type=0, lam=1):
 
 
 if __name__ == "__main__":
-
+    #examples 
     #params = get_init_param(hf_type='control', cell_type=0)
     #y, tsteps = run_Ordmm(parameters=params, num_beats=1000, out='control_endo_ordmm.npy')
     
@@ -190,17 +190,29 @@ if __name__ == "__main__":
     #params = get_init_param(hf_type='control', cell_type=2)
     #y, tsteps = run_Ordmm(parameters=params, num_beats=1000, out='control_m_ordmm.npy')
 
-    params = get_init_param_coupled_iso(hf_type='control', cell_type=0, lam=0.9)
-    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=0.9, out='control_endo_coupled_iso_090.npy')
+    #example coupled isometric
+    #params = get_init_param_coupled(hf_type='control', cell_type=0, lam=0.9, iso=1)
+    #y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=0.9, out='control_endo_coupled_iso_090.npy')
+
+    #example coupled dynamic lmbda
     
-    params = get_init_param_coupled_iso(hf_type='control', cell_type=0, lam=0.95)
-    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=0.95, out='control_endo_coupled_iso_095.npy')
+    params = get_init_param_coupled(hf_type='control', cell_type=0, lam=1.0, iso=0)
+    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.0, out='control_endo_coupled_dyn_100.npy')
 
-    params = get_init_param_coupled_iso(hf_type='control', cell_type=0, lam=1.05)
-    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.05, out='control_endo_coupled_iso_105.npy')
+    params = get_init_param_coupled(hf_type='control', cell_type=0, lam=1.05, iso=0)
+    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.05, out='control_endo_coupled_dyn_105.npy')
 
-    params = get_init_param_coupled_iso(hf_type='control', cell_type=0, lam=1.10)
-    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.10, out='control_endo_coupled_iso_110.npy')
+    params = get_init_param_coupled(hf_type='control', cell_type=0, lam=1.10, iso=0)
+    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.10, out='control_endo_coupled_dyn_110.npy')
+
+    params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=1.0, iso=0)
+    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.0, out='gomez_endo_coupled_dyn_100.npy')
+
+    params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=1.05, iso=0)
+    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.05, out='gomez_endo_coupled_dyn_105.npy')
+
+    params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=1.10, iso=0)
+    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.10, out='gomez_endo_coupled_dyn_110.npy')
 
 
  
