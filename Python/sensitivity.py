@@ -201,7 +201,7 @@ if __name__ == "__main__":
 
     for i in range(len(type_hf)):
         for j in range(len(params)):
-            V, Cai, Ta, CaTrpn = dynamic_sensitivity(
+            V, Cai, Ta, CaTrpn, lam = dynamic_sensitivity(
                 hf_type=type_hf[i], 
                 cell_type='endo', 
                 mech_param=params[j], 
