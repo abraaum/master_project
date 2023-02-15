@@ -246,8 +246,8 @@ def plot_isometric_sensitivity(V, Cai, Ta, CaTrpn):
 
 
 if __name__ == "__main__":
-    type_hf = ['gomez', 'control'] #, 
-    params = ['ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas'] #
+    type_hf = ['control'] #'gomez', 
+    params = ['kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas'] #'ku', 
     # missing control: nothing
     # missing HF: everything
 
