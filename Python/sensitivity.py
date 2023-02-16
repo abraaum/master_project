@@ -92,7 +92,7 @@ def isometric_sensitivity(hf_type, cell_type, mech_param, out=None):
             os.mkdir("sens")
 
         d = {
-            "L": lamval,
+            "L": lamval_dyn,
             "num_beats": num_beats,
             "V": V_list,
             "Cai": Cai_list,
