@@ -177,7 +177,7 @@ def dynamic_sensitivity(hf_type, cell_type, mech_param, out=None):
             os.mkdir("sens")
 
         d = {
-            "L": lamval,
+            "L": lamval_dyn,
             "num_beats": num_beats,
             "V": V_list,
             "Cai": Cai_list,
@@ -191,7 +191,6 @@ def dynamic_sensitivity(hf_type, cell_type, mech_param, out=None):
         print(f'Finished and saved {out}.')
 
     return V_list, Cai_list, Ta_list, CaTrpn_list, lmbda_list
-
 
 
 if __name__ == "__main__":

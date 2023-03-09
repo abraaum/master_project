@@ -19,8 +19,8 @@ import pandas as pd
 inc = np.arange(0.8, 1.201, 0.05).round(decimals=2)  # real run 0.01
 num_beats = 100  # real run 100-1000
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
-lamval = [0.9, 0.95, 1, 1.05, 1.1]
-lamfile = ["090", "095", "100", "105", "110"]
+lamval = [0.9, 0.95, 1, 1.05, 1.1] #
+lamfile = ["090", "095", "100", "105", "110"] # 
 
 
 def isometric_sensitivity_max(V, Cai, Ta, CaTrpn, time_2_max=False):
@@ -97,7 +97,7 @@ def load_sensitivity_values(filename):
 
     if L != [0.9, 0.95, 1.0, 1.05, 1.1]:
         raise ValueError(
-            f"This is a test run, the lambda values ({L}) should be equal to [0.9, 0.95, 1.0, 1.05, 1.1]"
+            f"This is a test run, the lambda values ({L}) should be equal to [0.9, 0.95, 1.0, 1.05, 1.1] for iso"
         )
     if N != 100:
         raise ValueError(
@@ -110,6 +110,7 @@ def load_sensitivity_values(filename):
     CaTrpn = all_values.item().get("CaTrpn")
 
     return V, Cai, Ta, CaTrpn
+
 
 
 def plot_isometric_sensitivity(V, Cai, Ta, CaTrpn, hf_type, param, save_fig=False):
@@ -209,7 +210,7 @@ def plot_isometric_sensitivity(V, Cai, Ta, CaTrpn, hf_type, param, save_fig=Fals
 
 if __name__ == "__main__":
 
-    type_hf = ['gomez'] #'control', 
+    type_hf = ['control', 'gomez'] #, 
     params = ['ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas'] #
 
     for i in range(len(type_hf)):

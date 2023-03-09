@@ -10,23 +10,37 @@ import matplotlib.pyplot as plt
 import tqdm
 import pandas as pd
 
-num_beats = 50  # real run 100-1000
+num_beats = 100  # real run 100-1000
 tsteps = np.arange(0.0, 650.0, 0.1)  # real run 1000
 
-#lst_value = [0.9, 0.95, 1.0, 1.05, 1.1] # lam
-lst_value = [0.0, 0.5, 1.0, 1.5, 2, 5] # kse
+kse_value = [0.0, 0.5, 1.0, 1.5, 2, 5, 10] # kse
 
 Tas = []
 Vs =[]
 Ls = []
 
-for i in range(len(lst_value)):
-    y0 = model.init_state_values() # lmbda=lst_value[i]
+for i in range(len(kse_value)):
+    y0 = np.load(
+                f"init_values/coupled/gomez_endo_coupled_dyn_100.npy"
+            )
     parameters = model.init_parameter_values(
         # CHANGE MANUALLY
         celltype=0,
-        #lmbda_set=lst_value[i],
-        Kse = lst_value[i],
+        lmbda_set=1,
+        Kse = kse_value[i],
+        #GNaL_rate=1.80,
+        #Gto_rate=0.40,
+        #GK1_rate=0.68,
+        #Gncx_rate=1.750,
+        #Jleak_rate=1.30,
+        #Jserca_rate=0.5,
+        #CaMKa_rate=1.50,
+        #Pnak_rate=0.70,
+        #Pnab_rate=1,
+        #Pcab_rate=1,
+        #thl_rate=1.80,
+        #Jrel_inf_sensitivity=0.80,
+        #Jrel_infp_sensitivity=0.80,
     )
 
     for n in tqdm.tqdm(range(num_beats)):
@@ -45,20 +59,22 @@ for i in range(len(lst_value)):
 
 
 fig, ax = plt.subplots(3, 1, sharex=True)
-for i in range(len(lst_value)):
+for i in range(len(kse_value)):
     V_t = Vs[i]
     Ta_t = Tas[i]
     L_t = Ls[i]
+    fig.suptitle(f'Sensitivity of Kse (Control)')
 
-    ax[0].plot(tsteps, V_t, label=f"val:{lst_value[i]}")
+    ax[0].plot(tsteps, V_t, label=f"Kse:{kse_value[i]}")
+    ax[0].grid(linewidth=0.3)
     ax[0].set_title("Voltage")
-    ax[1].plot(tsteps, L_t, label=f"val:{lst_value[i]}")
+    ax[1].plot(tsteps, L_t, label=f"Kse:{kse_value[i]}")
+    ax[1].grid(linewidth=0.3)
     ax[1].set_title("Lambda")
-    ax[2].plot(tsteps, Ta_t, label=f"val:{lst_value[i]}")
+    ax[2].plot(tsteps, Ta_t, label=f"Kse:{kse_value[i]}")
+    ax[2].grid(linewidth=0.3)
     ax[2].set_title("Ta")
    
-
-
 plt.legend()
 plt.show()
 
