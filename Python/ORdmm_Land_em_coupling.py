@@ -209,6 +209,9 @@ def init_parameter_values(**values):
     # parameter for isometric
     # isometric = 0 for false
 
+    # added mechanical rate parameters from Mora
+    # ntm, cat50ref, Tref, rw, rs
+
 
     init_values = np.array(
         [
@@ -358,6 +361,11 @@ def init_parameter_values(**values):
             1.6216216216216215, #visc
             1, #Kse
             0, #isometric
+            1, #ntm
+            1, #cat50ref
+            1, #Tref
+            1, #rw
+            1, #rs
         ],
         dtype=np.float_,
     )
@@ -511,6 +519,11 @@ def init_parameter_values(**values):
             ("visc", 143),
             ("Kse", 144),
             ("isometric", 145),
+            ("ntm_rate", 146),
+            ("cat50ref_rate", 147),
+            ("Tref_rate", 148),
+            ("rw_rate", 149),
+            ("rs_rate", 150),
         ]
     )
 
@@ -746,6 +759,11 @@ def parameter_indices(*params):
             ("visc", 143),
             ("Kse", 144),
             ("isometric", 145),
+            ("ntm_rate", 146),
+            ("cat50ref_rate", 147),
+            ("Tref_rate", 148),
+            ("rw_rate", 149),
+            ("rs_rate", 150),
         ]
     )
 
@@ -1155,7 +1173,7 @@ def rhs(states, t, parameters, values=None):
     ) = states
 
     # Assign parameters
-    assert len(parameters) == 146
+    assert len(parameters) == 151
     scale_ICaL = parameters[0]
     scale_IK1 = parameters[1]
     scale_IKr = parameters[2]
@@ -1291,6 +1309,11 @@ def rhs(states, t, parameters, values=None):
     visc = parameters[143]
     Kse = parameters[144]
     isometric = parameters[145]
+    ntm_rate = parameters[146]
+    cat50ref_rate = parameters[147]
+    Tref_rate = parameters[148]
+    rw_rate = parameters[149]
+    rs_rate = parameters[150]
 
     # Init return args
     if values is None:
@@ -1824,14 +1847,17 @@ def rhs(states, t, parameters, values=None):
 
     tmp_ku = ku * ku_rate 
     tmp_kuw = kuw * kuw_rate 
-    tmp_kws = kws * kws_rate 
+    tmp_kws = kws * kws_rate
+    tmp_ntm = ntm * ntm_rate
+    tmp_rw = rw * rw_rate 
+    tmp_rs = rs * rs_rate
 
-    kwu = -tmp_kws + tmp_kuw * (-1 + 1.0 / rw)
-    ksu = tmp_kws * rw * (-1 + 1.0 / rs)
-    Aw = Tot_A * rs / (rs + rw * (1 - rs))
+    kwu = -tmp_kws + tmp_kuw * (-1 + 1.0 / tmp_rw)
+    ksu = tmp_kws * tmp_rw * (-1 + 1.0 / tmp_rs)
+    Aw = Tot_A * tmp_rs / (tmp_rs + tmp_rw * (1 - tmp_rs))
     As = Aw
-    cw = tmp_kuw * phi * (1 - rw) / rw
-    cs = tmp_kws * phi * rw * (1 - rs) / rs
+    cw = tmp_kuw * phi * (1 - tmp_rw) / tmp_rw
+    cs = tmp_kws * phi * tmp_rw * (1 - tmp_rs) / tmp_rs
 
     lambda_min12 = lmbda if lmbda < 1.2 else 1.2 #123 SL
     lambda_min087 = lambda_min12 if lambda_min12 < 0.87 else 0.87 # 124 SL
@@ -1847,12 +1873,12 @@ def rhs(states, t, parameters, values=None):
     )
     values[40] = tmp_kws * XW - XS * gammasu - XS * ksu
     values[41] = tmp_kuw * XU - tmp_kws * XW - XW * gammawu - XW * kwu
-    cat50 = cat50_ref + Beta1 * (-1 + lambda_min12)
+    cat50 = (cat50_ref*cat50ref_rate) + Beta1 * (-1 + lambda_min12)
     values[42] = (ktrpn*ktrpn_rate) * (-CaTrpn + math.pow(1000 * cai / cat50, (ntrpn*ntrpn_rate)) * (1 - CaTrpn))
-    kb = tmp_ku * math.pow((Trpn50*Trpn50_rate), ntm) / (1 - rs - rw * (1 - rs))
+    kb = tmp_ku * math.pow((Trpn50*Trpn50_rate), tmp_ntm) / (1 - tmp_rs - tmp_rw * (1 - tmp_rs))
     values[43] = (
-        math.pow(CaTrpn, -ntm / 2) if math.pow(CaTrpn, -ntm / 2) < 100 else 100
-    ) * XU * kb - tmp_ku * math.pow(CaTrpn, ntm / 2) * TmB
+        math.pow(CaTrpn, -tmp_ntm / 2) if math.pow(CaTrpn, -tmp_ntm / 2) < 100 else 100
+    ) * XU * kb - tmp_ku * math.pow(CaTrpn, tmp_ntm / 2) * TmB
     values[44] = dLambda * As - Zetas * cs
     values[45] = dLambda * Aw - Zetaw * cw
     C = -1 + lambda_min12
@@ -1869,7 +1895,7 @@ def rhs(states, t, parameters, values=None):
     ) * Bcai
 
 
-    Fa = Tref * ((1 + Zetas) * XS + XW * Zetaw) * h_lambda / rs 
+    Fa = (Tref*Tref_rate) * ((1 + Zetas) * XS + XW * Zetaw) * h_lambda / tmp_rs 
     Fp = (
         Cp
         * b_ff
@@ -1964,7 +1990,7 @@ def monitor(states, t, parameters, monitored=None):
     ) = states
 
     # Assign parameters
-    assert len(parameters) == 146
+    assert len(parameters) == 151
     scale_ICaL = parameters[0]
     scale_IK1 = parameters[1]
     scale_IKr = parameters[2]
@@ -2102,6 +2128,11 @@ def monitor(states, t, parameters, monitored=None):
     visc = parameters[143]
     Kse = parameters[144]
     isometric = parameters[145]
+    ntm_rate = parameters[146]
+    cat50ref_rate = parameters[147]
+    Tref_rate = parameters[148]
+    rw_rate = parameters[149]
+    rs_rate = parameters[150]
 
 
     # Init return args
@@ -2839,16 +2870,19 @@ def monitor(states, t, parameters, monitored=None):
     tmp_ku = ku * ku_rate 
     tmp_kuw = kuw * kuw_rate
     tmp_kws = kws * kws_rate
+    tmp_ntm = ntm * ntm_rate
+    tmp_rw = rw * rw_rate
+    tmp_rs = rs *rs_rate
 
     monitored[114] = XS if XS > 0 else 0
     monitored[115] = XW if XW > 0 else 0
     monitored[116] = CaTrpn if CaTrpn > 0 else 0
-    monitored[117] = -tmp_kws + tmp_kuw * (-1 + 1.0 / rw)
-    monitored[118] = tmp_kws * rw * (-1 + 1.0 / rs)
-    monitored[119] = Tot_A * rs / (rs + rw * (1 - rs))
+    monitored[117] = -tmp_kws + tmp_kuw * (-1 + 1.0 / tmp_rw)
+    monitored[118] = tmp_kws * tmp_rw * (-1 + 1.0 / tmp_rs)
+    monitored[119] = Tot_A * tmp_rs / (tmp_rs + tmp_rw * (1 - tmp_rs))
     monitored[120] = monitored[119]
-    monitored[121] = tmp_kuw * phi * (1 - rw) / rw
-    monitored[122] = tmp_kws * phi * rw * (1 - rs) / rs
+    monitored[121] = tmp_kuw * phi * (1 - tmp_rw) / tmp_rw
+    monitored[122] = tmp_kws * phi * tmp_rw * (1 - tmp_rs) / tmp_rs
 
     monitored[123] = lmbda if lmbda < 1.2 else 1.2 #SL
     monitored[124] = monitored[123] if monitored[123] < 0.87 else 0.87 #SL
@@ -2866,18 +2900,18 @@ def monitor(states, t, parameters, monitored=None):
     monitored[302] = (
         tmp_kuw * monitored[127] - tmp_kws * XW - XW * monitored[117] - XW * monitored[128]
     )
-    monitored[130] = cat50_ref + Beta1 * (-1 + monitored[123])
+    monitored[130] = (cat50_ref*cat50ref_rate) + Beta1 * (-1 + monitored[123])
     monitored[303] = (ktrpn*ktrpn_rate) * (
         -CaTrpn + math.pow(1000 * cai / monitored[130], (ntrpn*ntrpn_rate)) * (1 - CaTrpn)
     )
-    monitored[131] = tmp_ku * math.pow((Trpn50*Trpn50_rate), ntm) / (1 - rs - rw * (1 - rs))
+    monitored[131] = tmp_ku * math.pow((Trpn50*Trpn50_rate), tmp_ntm) / (1 - tmp_rs - tmp_rw * (1 - tmp_rs))
     #from IPython import embed; embed()
     monitored[304] = (
-        math.pow(CaTrpn, -ntm / 2) if math.pow(CaTrpn, -ntm / 2) < 100 else 100
-    ) * monitored[127] * monitored[131] - tmp_ku * math.pow(CaTrpn, ntm / 2) * TmB
+        math.pow(CaTrpn, -tmp_ntm / 2) if math.pow(CaTrpn, -tmp_ntm / 2) < 100 else 100
+    ) * monitored[127] * monitored[131] - tmp_ku * math.pow(CaTrpn, tmp_ntm / 2) * TmB
     monitored[305] = dLambda * monitored[120] - Zetas * monitored[122]
     monitored[306] = dLambda * monitored[119] - Zetaw * monitored[121]
-    monitored[132] = Tref * ((1 + Zetas) * XS + XW * Zetaw) * monitored[126] / rs
+    monitored[132] = (Tref*Tref_rate) * ((1 + Zetas) * XS + XW * Zetaw) * monitored[126] / tmp_rs #AGATHE double check scaling here Tref/rs
     monitored[133] = -1 + monitored[123]
     monitored[134] = -Cd + monitored[133]
     monitored[135] = etas if monitored[134] < 0 else etal
@@ -2898,7 +2932,7 @@ def monitor(states, t, parameters, monitored=None):
         / (F * monitored[3])
     ) * monitored[140]
 
-    monitored[309] = Tref * ((1 + Zetas) * XS + XW * Zetaw) * monitored[126] / rs
+    monitored[309] = (Tref*Tref_rate) * ((1 + Zetas) * XS + XW * Zetaw) * monitored[126] / tmp_rs
     monitored[310] = (
         Cp
         * b_ff

@@ -2,8 +2,7 @@
 Funcitons for running mechanical sensitivity analysis.
 
 TODO:
-1. Add dynamic run
-2. make dict or another file to load different parameter sets (?)
+1. make dict or another file to load different parameter sets (?)
 """
 
 import ORdmm_Land_em_coupling as model
@@ -46,6 +45,11 @@ def isometric_sensitivity(hf_type, cell_type, mech_param, out=None):
                 Trpn50_rate=inc[i] if mech_param=='Trpn50' else 1,
                 gammaw_rate=inc[i] if mech_param=='gammaw' else 1,
                 gammas_rate=inc[i] if mech_param=='gammas' else 1,
+                rs_rate=inc[i] if mech_param=='rs' else 1,
+                rw_rate=inc[i] if mech_param=='rw' else 1,
+                Tref_rate=inc[i] if mech_param=='Tref' else 1,
+                cat50ref_rate=inc[i] if mech_param=='cat50ref' else 1,
+                ntm_rate=inc[i] if mech_param=='ntm' else 1,
                 #HF parameters
                 GNaL_rate=1.80 if hf_type=='gomez' else 1,
                 Gto_rate=0.40 if hf_type=='gomez' else 1,
@@ -92,7 +96,7 @@ def isometric_sensitivity(hf_type, cell_type, mech_param, out=None):
             os.mkdir("sens")
 
         d = {
-            "L": lamval_dyn,
+            "L": lamval,
             "num_beats": num_beats,
             "V": V_list,
             "Cai": Cai_list,
@@ -128,6 +132,11 @@ def dynamic_sensitivity(hf_type, cell_type, mech_param, out=None):
                 Trpn50_rate=inc[i] if mech_param=='Trpn50' else 1,
                 gammaw_rate=inc[i] if mech_param=='gammaw' else 1,
                 gammas_rate=inc[i] if mech_param=='gammas' else 1,
+                rs_rate=inc[i] if mech_param=='rs' else 1,
+                rw_rate=inc[i] if mech_param=='rw' else 1,
+                Tref_rate=inc[i] if mech_param=='Tref' else 1,
+                cat50ref_rate=inc[i] if mech_param=='cat50ref' else 1,
+                ntm_rate=inc[i] if mech_param=='ntm' else 1,
                 #HF parameters
                 GNaL_rate=1.80 if hf_type=='gomez' else 1,
                 Gto_rate=0.40 if hf_type=='gomez' else 1,
@@ -195,16 +204,16 @@ def dynamic_sensitivity(hf_type, cell_type, mech_param, out=None):
 
 if __name__ == "__main__":
     type_hf = ['control', 'gomez',] 
-    params = ['ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas'] # 
+    params = ['rs', 'rw', 'Tref', 'cat50ref', 'ntm'] # 'ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas'
 
 
     for i in range(len(type_hf)):
         for j in range(len(params)):
-            V, Cai, Ta, CaTrpn, lam = dynamic_sensitivity(
+            V, Cai, Ta, CaTrpn, lam = isometric_sensitivity(
                 hf_type=type_hf[i], 
                 cell_type='endo', 
                 mech_param=params[j], 
-                out=f'sens_dyn_{type_hf[i]}_endo_{params[j]}.npy')
+                out=f'sens_iso_{type_hf[i]}_endo_{params[j]}.npy')
 
 
     #V, Cai, Ta, CaTrpn = load_sensitivity_values("test.npy")
