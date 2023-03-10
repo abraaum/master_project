@@ -203,8 +203,8 @@ def dynamic_sensitivity(hf_type, cell_type, mech_param, out=None):
 
 
 if __name__ == "__main__":
-    type_hf = ['control', 'gomez',] 
-    params = ['rs', 'rw', 'Tref', 'cat50ref', 'ntm'] # 'ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas'
+    type_hf = ['gomez',] #'control', 
+    params = ['ntm'] # 'ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 
 
 
     for i in range(len(type_hf)):
@@ -214,6 +214,18 @@ if __name__ == "__main__":
                 cell_type='endo', 
                 mech_param=params[j], 
                 out=f'sens_iso_{type_hf[i]}_endo_{params[j]}.npy')
+    
+    type_hf_d = ['control', 'gomez',] #
+    params_d = ['rs', 'rw', 'Tref', 'cat50ref', 'ntm'] # 'ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 
+
+
+    for i in range(len(type_hf_d)):
+        for j in range(len(params_d)):
+            V, Cai, Ta, CaTrpn, lam = dynamic_sensitivity(
+                hf_type=type_hf_d[i], 
+                cell_type='endo', 
+                mech_param=params_d[j], 
+                out=f'sens_dyn_{type_hf_d[i]}_endo_{params_d[j]}.npy')
 
 
     #V, Cai, Ta, CaTrpn = load_sensitivity_values("test.npy")
