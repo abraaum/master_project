@@ -9,15 +9,15 @@ import time
 
 from population_func import apd_values, catd_values, tad_values, state_biomarkers, monitored_biomarkers #ap_max, dvdt_max
 
-num_beats = 10
+num_beats = 100
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
-pop_size = 10
+pop_size = 100
 # lambda = 1
 
 def random_sampling(pop_size=pop_size, hf_type='control', mech_type='iso'):
     """Random sampling (pop_size x 12 parameters) from normal distribution"""
-    np.random.seed(10)
-    all_val = np.random.normal(loc=1, scale = 0.15, size=10000)
+    np.random.seed(12)
+    all_val = np.random.normal(loc=1, scale = 0.15, size=1000000)
     selected_val = np.random.choice(all_val, (pop_size,12), replace=True)
     # save to file
     np.save(f"rand_sample_{mech_type}_{hf_type}.npy", selected_val)
@@ -30,7 +30,7 @@ def make_population(hf_type, cell_type, mech_type, out=None):
     rand_val = np.load(f'rand_sample_{mech_type}_{hf_type}.npy') 
     population = []
 
-    for i in range(10):
+    for i in range(pop_size):
         y0 = np.load(
             f"init_values/coupled/{hf_type}_{cell_type}_coupled_{mech_type}_100.npy"
         )
@@ -73,7 +73,7 @@ def make_population(hf_type, cell_type, mech_type, out=None):
 
         population.append(y0)
     
-    np.save(f'population_{mech_type}_{hf_type}.npy', population, allow_pickle=True)
+    np.save(f'population_{mech_type}_{hf_type}_trial.npy', population, allow_pickle=True) #TESTING ON EX3
     
 
 def plot_population(hf_type='control', cell_type='endo', mech_type='iso'):
@@ -267,7 +267,16 @@ def clean_population(hf_type='control', cell_type='endo', mech_type='iso'):
 
 
 if __name__ == "__main__":
+    
     #random_sampling(hf_type='control', mech_type='iso')
-    #make_population(hf_type='control', cell_type='endo', mech_type='iso')
+    make_population(hf_type='control', cell_type='endo', mech_type='iso')
+    
     #plot_population(hf_type='control', cell_type='endo', mech_type='iso')
-    clean_population()
+    #clean_population()
+
+    # check how the different parameters are distributed
+    #rand_val = np.load(f'rand_sample_iso_control.npy') 
+    #print(rand_val.shape)
+    #print(rand_val.min(axis=0))
+    #print(rand_val.max(axis=0))
+    #print(rand_val.mean(axis=0))
