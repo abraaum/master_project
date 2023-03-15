@@ -59,10 +59,10 @@ def tad_values(monitor, percentage=0.5, index=False):
     TaD_idx_tmp = (np.abs(Ta_tmp - TaD)).argmin() 
     TaD_idx = Ta_max_idx + TaD_idx_tmp
     if index == True:
-        return TaD_idx 
+        return TaD_idx-Ta_max_idx
     else:
         #time in ms
-        return TaD_idx/10
+        return (TaD_idx-Ta_max_idx)/10
 
 
 def state_biomarkers(y):

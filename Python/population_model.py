@@ -5,32 +5,37 @@ import os
 import matplotlib.pyplot as plt
 import tqdm
 import pandas as pd
-import time
+import sys
 
 from population_func import apd_values, catd_values, tad_values, state_biomarkers, monitored_biomarkers #ap_max, dvdt_max
 
 num_beats = 100
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
-pop_size = 100
+pop_size = 1000
 # lambda = 1
+
 
 def random_sampling(pop_size=pop_size, hf_type='control', mech_type='iso'):
     """Random sampling (pop_size x 12 parameters) from normal distribution"""
     np.random.seed(12)
-    all_val = np.random.normal(loc=1, scale = 0.15, size=1000000)
-    selected_val = np.random.choice(all_val, (pop_size,12), replace=True)
+    selected_val = np.random.normal(loc=1, scale = 0.15, size=(pop_size, 12))
     # save to file
-    np.save(f"rand_sample_{mech_type}_{hf_type}.npy", selected_val)
+    if not os.path.isdir("init_pop"):
+        os.mkdir("init_pop")
+    np.save(f"init_pop/rand_sample_{mech_type}_{hf_type}.npy", selected_val)
 
 
-def make_population(hf_type, cell_type, mech_type, out=None):
-    """Make population of models.
+def make_population(hf_type, cell_type, mech_type, part):
+    """Make population of models. (for multiple partitions)
     """
     # load random sampling values
-    rand_val = np.load(f'rand_sample_{mech_type}_{hf_type}.npy') 
+    rand_val = np.load(f'init_pop/rand_sample_{mech_type}_{hf_type}.npy') 
     population = []
 
-    for i in range(pop_size):
+    part_dict = {'1': [0,200], '2': [200,400], '3': [400,600], '4': [600,800], '5': [800,1000]}
+
+    for i in range(part_dict[part][0], part_dict[part][1]):
+        print(i)
         y0 = np.load(
             f"init_values/coupled/{hf_type}_{cell_type}_coupled_{mech_type}_100.npy"
         )
@@ -72,8 +77,8 @@ def make_population(hf_type, cell_type, mech_type, out=None):
             y0 = y[-1]
 
         population.append(y0)
-    
-    np.save(f'population_{mech_type}_{hf_type}_trial.npy', population, allow_pickle=True) #TESTING ON EX3
+
+    np.save(f'init_pop/population_{mech_type}_{hf_type}_{part}.npy', population, allow_pickle=True) #AGATHE
     
 
 def plot_population(hf_type='control', cell_type='endo', mech_type='iso'):
@@ -81,7 +86,7 @@ def plot_population(hf_type='control', cell_type='endo', mech_type='iso'):
     # load random sampling values
     rand_val = np.load(f'rand_sample_{mech_type}_{hf_type}.npy') 
     # load population
-    y0s = np.load(f'population_{mech_type}_{hf_type}.npy')
+    y0s = np.load('tester_pop.npy') #f'population_{mech_type}_{hf_type}.npy' AGATHE
 
     fig, ax = plt.subplots(2, 2, sharex=True, figsize=(14,8))
 
@@ -164,7 +169,7 @@ def clean_population(hf_type='control', cell_type='endo', mech_type='iso'):
     # load random sampling values
     rand_val = np.load(f'rand_sample_{mech_type}_{hf_type}.npy') 
     # load population
-    y0s = np.load(f'population_{mech_type}_{hf_type}.npy')
+    y0s = np.load('population_iso_control_trial.npy') #f'population_{mech_type}_{hf_type}.npy' AGATHE
 
     remove_pop = []
 
@@ -233,7 +238,7 @@ def clean_population(hf_type='control', cell_type='endo', mech_type='iso'):
 
         # check electrophysiological biomarkers
         print(f'Cell number {i}')
-        print(d_t)
+        print(d_t) # AGATHE
         if APD_40 >= 85 and APD_40 <= 320 and \
             APD_50 >= 110 and APD_50 <= 350 and \
             APD_90 >= 180 and APD_90 <= 440 and \
@@ -260,6 +265,8 @@ def clean_population(hf_type='control', cell_type='endo', mech_type='iso'):
     new_parameters = np.delete(new_parameters, remove_pop, 0)
     new_population = np.delete(new_population, remove_pop, 0)
     print(remove_pop)
+    np.save(f"clean_test_param.npy", new_parameters)
+    np.save(f"clean_test_pop.npy", new_population)
     
 
         
@@ -269,14 +276,8 @@ def clean_population(hf_type='control', cell_type='endo', mech_type='iso'):
 if __name__ == "__main__":
     
     #random_sampling(hf_type='control', mech_type='iso')
-    make_population(hf_type='control', cell_type='endo', mech_type='iso')
+    partition = sys.argv[1]
+    make_population(hf_type='control', cell_type='endo', mech_type='iso', part=partition)
     
     #plot_population(hf_type='control', cell_type='endo', mech_type='iso')
     #clean_population()
-
-    # check how the different parameters are distributed
-    #rand_val = np.load(f'rand_sample_iso_control.npy') 
-    #print(rand_val.shape)
-    #print(rand_val.min(axis=0))
-    #print(rand_val.max(axis=0))
-    #print(rand_val.mean(axis=0))
