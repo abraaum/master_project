@@ -17,7 +17,10 @@ pop_size = 1000
 
 def random_sampling(pop_size=pop_size, hf_type='control', mech_type='iso'):
     """Random sampling (pop_size x 12 parameters) from normal distribution"""
-    np.random.seed(12)
+    #np.random.seed(12) # iso control
+    #np.random.seed(13) # iso HF
+    np.random.seed(14) # dynamic control
+    #np.random.seed(15) # dynamic HF
     selected_val = np.random.normal(loc=1, scale = 0.15, size=(pop_size, 12))
     # save to file
     if not os.path.isdir("init_pop"):
@@ -167,9 +170,9 @@ def clean_population(hf_type='control', cell_type='endo', mech_type='iso'):
     """NOT FINISHED, missing mechanical check and save
     Load population -> clean data -> new population"""
     # load random sampling values
-    rand_val = np.load(f'rand_sample_{mech_type}_{hf_type}.npy') 
+    rand_val = np.load(f'init_pop/rand_sample_{mech_type}_{hf_type}.npy') 
     # load population
-    y0s = np.load('population_iso_control_trial.npy') #f'population_{mech_type}_{hf_type}.npy' AGATHE
+    y0s = np.load(f'init_pop/population_{mech_type}_{hf_type}.npy') # AGATHE
 
     remove_pop = []
 
@@ -238,7 +241,7 @@ def clean_population(hf_type='control', cell_type='endo', mech_type='iso'):
 
         # check electrophysiological biomarkers
         print(f'Cell number {i}')
-        print(d_t) # AGATHE
+        #print(d_t) # AGATHE
         if APD_40 >= 85 and APD_40 <= 320 and \
             APD_50 >= 110 and APD_50 <= 350 and \
             APD_90 >= 180 and APD_90 <= 440 and \
@@ -265,8 +268,10 @@ def clean_population(hf_type='control', cell_type='endo', mech_type='iso'):
     new_parameters = np.delete(new_parameters, remove_pop, 0)
     new_population = np.delete(new_population, remove_pop, 0)
     print(remove_pop)
-    np.save(f"clean_test_param.npy", new_parameters)
-    np.save(f"clean_test_pop.npy", new_population)
+    
+    np.save(f'init_pop/population_{mech_type}_{hf_type}_clean.npy', new_population)
+    np.save(f'init_pop/rand_sample_{mech_type}_{hf_type}_clean.npy', new_parameters)
+    np.save(f'init_pop/population_{mech_type}_{hf_type}_remove.npy', remove_pop, allow_pickle=True)
     
 
         
@@ -275,7 +280,7 @@ def clean_population(hf_type='control', cell_type='endo', mech_type='iso'):
 
 if __name__ == "__main__":
     
-    #random_sampling(hf_type='control', mech_type='iso')
+    #random_sampling(hf_type='control', mech_type='dyn')
     partition = sys.argv[1]
     make_population(hf_type='control', cell_type='endo', mech_type='iso', part=partition)
     
