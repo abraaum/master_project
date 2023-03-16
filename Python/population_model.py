@@ -18,9 +18,9 @@ pop_size = 1000
 def random_sampling(pop_size=pop_size, hf_type='control', mech_type='iso'):
     """Random sampling (pop_size x 12 parameters) from normal distribution"""
     #np.random.seed(12) # iso control
-    np.random.seed(13) # iso HF
+    #np.random.seed(13) # iso HF
     #np.random.seed(14) # dynamic control
-    #np.random.seed(15) # dynamic HF
+    np.random.seed(15) # dynamic HF
     selected_val = np.random.normal(loc=1, scale = 0.15, size=(pop_size, 12))
     # save to file
     if not os.path.isdir("init_pop"):
@@ -280,9 +280,9 @@ def clean_population(hf_type='control', cell_type='endo', mech_type='iso'):
 
 if __name__ == "__main__":
     
-    #random_sampling(hf_type='gomez', mech_type='iso')
+    #random_sampling(hf_type='gomez', mech_type='dyn')
     partition = sys.argv[1]
     make_population(hf_type='gomez', cell_type='endo', mech_type='iso', part=partition)
     
     #plot_population(hf_type='control', cell_type='endo', mech_type='iso')
-    #clean_population()
+    #clean_population(hf_type='control', cell_type='endo', mech_type='dyn')

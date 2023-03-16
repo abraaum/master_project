@@ -58,7 +58,7 @@ def plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', o
 
     fig, ax = plt.subplots(2, 2, sharex=True, figsize=(14,8))
 
-    for i in range(10):
+    for i in range(pop_size):
         y0 = y0s[i]
 
         parameters = model.init_parameter_values(
@@ -144,6 +144,7 @@ def plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', o
 
     if out != None:
         plt.savefig(f'plots/pop_diff_{hf_type}_{mech_type}.png')
+        plt.show()
     else:
         plt.show()
 
@@ -152,7 +153,7 @@ def plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', o
 if __name__ == "__main__":
 
     #plot_population_dist(hf_type='control', mech_type='iso',out=None)
-    plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', out=None)
+    plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', out=True)
 
 
 
