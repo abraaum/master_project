@@ -282,7 +282,7 @@ if __name__ == "__main__":
     
     #random_sampling(hf_type='control', mech_type='dyn')
     partition = sys.argv[1]
-    make_population(hf_type='control', cell_type='endo', mech_type='iso', part=partition)
+    make_population(hf_type='control', cell_type='endo', mech_type='dyn', part=partition)
     
     #plot_population(hf_type='control', cell_type='endo', mech_type='iso')
     #clean_population()
