@@ -17,7 +17,7 @@ pop_size = 1000
 def plot_population_dist(hf_type='control', mech_type='iso', out=None):
     """Plot differennce between distributions of original and refined population parameters"""
 
-    initial_pop = np.load(f'init_pop/rand_sample_{mech_type}_{hf_type}.npy')
+    initial_pop = np.load(f'init_pop/rand_sample_iso_control.npy')
     clean_pop = np.load(f'init_pop/rand_sample_{mech_type}_{hf_type}_clean.npy')
 
     fig, axis = plt.subplots(3,4, figsize=(16,8), sharey=True, sharex=True)
@@ -42,15 +42,9 @@ def plot_population_dist(hf_type='control', mech_type='iso', out=None):
 
 
 def plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', out=None):
-    """Plot .... ligthblue/blue plot from Mora.
-
-    TODO:
-    1. FIX SO IT WORKS FOR HF AS WELL
-    2. FIX SAVING
-    
-    """
+    """Plot difference in accepted and rejected cells in population."""
     # load random sampling values
-    rand_val = np.load(f'init_pop/rand_sample_{mech_type}_{hf_type}.npy') 
+    rand_val = np.load(f'init_pop/rand_sample_iso_control.npy') 
     # load population
     y0s = np.load(f'init_pop/population_{mech_type}_{hf_type}.npy') 
     # find difference of populations

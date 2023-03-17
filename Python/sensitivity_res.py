@@ -98,9 +98,10 @@ def load_sensitivity_values(filename):
     N = all_values.item().get("num_beats")
 
     if L != [0.9, 0.95, 1.0, 1.05, 1.1]: #
-        raise ValueError(
-            f"This is a test run, the lambda values ({L}) should be equal to [0.9, 0.95, 1.0, 1.05, 1.1] for iso"
-        )
+        #raise ValueError(
+        #    f"This is a test run, the lambda values ({L}) should be equal to [0.9, 0.95, 1.0, 1.05, 1.1] for iso"
+        #)
+        pass
     if N != 100:
         raise ValueError(
             f"This is a test run, the # of beats ({N}) should be equal to 100"
@@ -214,14 +215,20 @@ def plot_isometric_sensitivity(V, Cai, Ta, CaTrpn, hf_type, param, save_fig=Fals
 def plot_isometric_full(param, hf_type, mech_type):
     Vs, Cais, Tas, CaTrpns = load_sensitivity_values(f'sens_{mech_type}_{hf_type}_endo_{param}.npy')
     fig, ax = plt.subplots(2, 2, sharex=True, figsize=(14,8))
+    col_list = ['b', 'g', 'm', 'c', 'r'] 
+    lamval = [0.9, 0.95, 1, 1.05, 1.1] 
+
+    if mech_type=='dyn':
+        col_list = ['b', 'g', 'm'] 
+        lamval = [1, 1.05, 1.1]
+     
+
     for l in range(len(lamval)):
         for i in range(len(inc)):
             V = Vs[l][i]
             Cai = Cais[l][i]
             Ta = Tas[l][i]
             CaTrpn = CaTrpns[l][i]
-
-            col_list = ['b', 'g', 'm', 'c', 'r']
 
             fig.suptitle(f'Sensitivity analysis on {param} ({hf_type})')
             ax[0][0].plot(tsteps, V, linewidth=0.7 if inc[i]==1 else 0.3, color=col_list[l], label=f"λ: {lamval[l]}" if inc[i]==1 else None)
@@ -265,8 +272,8 @@ if __name__ == "__main__":
             plot_isometric_sensitivity(V=V, Cai=Cai, Ta=Ta, CaTrpn=CaTrpn, hf_type=type_hf[i], param=params[j], save_fig=True)
     
     """
-    type_hf = ['gomez'] #, 'control', 
-    params = ['ku'] # , 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 'ntm'
+    type_hf = ['control'] #, 'control', 
+    params = ['cat50ref'] # , 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 'ntm'
     for i in range(len(type_hf)):
         for j in range(len(params)):
             plot_isometric_full(param=params[j], hf_type=type_hf[i], mech_type='iso')
