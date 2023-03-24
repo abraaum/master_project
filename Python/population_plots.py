@@ -48,7 +48,7 @@ def plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', o
     # load population
     y0s = np.load(f'init_pop/population_{mech_type}_{hf_type}.npy') 
     # find difference of populations
-    removed_rand_index = np.load(f'init_pop/population_{mech_type}_{hf_type}_remove.npy', allow_pickle=True) 
+    removed_rand_index = np.load(f'init_pop/population_iso_control_remove.npy', allow_pickle=True) 
 
     fig, ax = plt.subplots(2, 2, sharex=True, figsize=(14,8))
 
@@ -99,13 +99,14 @@ def plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', o
         CaTrpn = y.T[model.state_indices("CaTrpn")]
 
         if i in removed_rand_index:
-            alpha = 0.5
-            col = 'lightskyblue'
+            alpha = 0.5 #0.5
+            col = 'lightskyblue' 
             z = 1
         else:
             alpha = 1
-            col = 'blue'
+            col = 'tab:blue'
             z = 2
+        print(i)
         
         ax[0][0].plot(tsteps, V, linewidth=0.7, alpha=alpha, color=col, zorder=z)
         ax[0][0].set_title("Voltage")
@@ -127,7 +128,7 @@ def plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', o
 
         ax[1][1].plot(tsteps, CaTrpn, linewidth=0.7, alpha=alpha, color=col, zorder=z)
         ax[1][1].set_title("CaTrpn")
-        ax[1][1].set_ylabel("CaTrpn (?)")
+        ax[1][1].set_ylabel("CaTrpn")
         ax[1][1].set_xlabel("Time (ms)")
         ax[1][1].grid(linewidth=0.3)
 
@@ -137,7 +138,7 @@ def plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', o
 
 
     if out != None:
-        plt.savefig(f'plots/pop_diff_{hf_type}_{mech_type}.png')
+        plt.savefig(f'plots/pop_diff_{hf_type}_{mech_type}_2.png')
         plt.show()
     else:
         plt.show()
@@ -147,7 +148,9 @@ def plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', o
 if __name__ == "__main__":
 
     #plot_population_dist(hf_type='control', mech_type='iso',out=None)
-    plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', out=True)
+    #plot_population_diff(hf_type='control', cell_type='endo', mech_type='dyn', out=True)
+    #plot_population_diff(hf_type='gomez', cell_type='endo', mech_type='dyn', out=True)
+    plot_population_diff(hf_type='gomez', cell_type='endo', mech_type='iso', out=True)
 
 
 

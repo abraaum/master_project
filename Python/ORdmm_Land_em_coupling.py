@@ -212,6 +212,13 @@ def init_parameter_values(**values):
     # added mechanical rate parameters from Mora
     # ntm, cat50ref, Tref, rw, rs
 
+    # parameters for drug trials
+
+    # drug_IKr, drug_INa, drug_NaL, drug_ICaL, drug_IKs, drug_IK1, drug_Ito
+    # IC50_IKr, IC50_INa, IC50_NaL, IC50_ICaL, IC50_IKs, IC50_IK1, IC50_Ito
+    # h_IKr, h_INa, h_NaL, h_ICaL, h_IKs, h_IK1, h_Ito
+
+
 
     init_values = np.array(
         [
@@ -366,6 +373,27 @@ def init_parameter_values(**values):
             1, #Tref
             1, #rw
             1, #rs
+            0, # drug_IKr, 
+            0, # drug_INa, 
+            0, # drug_NaL, 
+            0, # drug_ICaL, 
+            0, # drug_IKs, 
+            0, # drug_IK1, 
+            0, # drug_Ito,
+            0, # IC50_IKr, 
+            0, # IC50_INa, 
+            0, # IC50_NaL, 
+            0, # IC50_ICaL, 
+            0, # IC50_IKs, 
+            0, # IC50_IK1, 
+            0, # IC50_Ito,
+            0, # h_IKr, 
+            0, # h_INa, 
+            0, # h_NaL, 
+            0, # h_ICaL, 
+            0, # h_IKs, 
+            0, # h_IK1, 
+            0, # h_Ito,
         ],
         dtype=np.float_,
     )
@@ -524,6 +552,27 @@ def init_parameter_values(**values):
             ("Tref_rate", 148),
             ("rw_rate", 149),
             ("rs_rate", 150),
+            ("drug_IKr", 151),
+            ("drug_INa", 152),
+            ("drug_INaL", 153),
+            ("drug_ICaL", 154),
+            ("drug_IKs", 155),
+            ("drug_IK1", 156),
+            ("drug_Ito", 157),
+            ("IC50_IKr", 158),
+            ("IC50_INa", 159),
+            ("IC50_INaL", 160),
+            ("IC50_ICaL", 161),
+            ("IC50_IKs", 162),
+            ("IC50_IK1", 163),
+            ("IC50_Ito", 164),
+            ("h_IKr", 165),
+            ("h_INa", 166),
+            ("h_INaL", 167),
+            ("h_ICaL", 168),
+            ("h_IKs", 169),
+            ("h_IK1", 170),
+            ("h_Ito", 171),
         ]
     )
 
@@ -764,6 +813,27 @@ def parameter_indices(*params):
             ("Tref_rate", 148),
             ("rw_rate", 149),
             ("rs_rate", 150),
+            ("drug_IKr", 151),
+            ("drug_INa", 152),
+            ("drug_INaL", 153),
+            ("drug_ICaL", 154),
+            ("drug_IKs", 155),
+            ("drug_IK1", 156),
+            ("drug_Ito", 157),
+            ("IC50_IKr", 158),
+            ("IC50_INa", 159),
+            ("IC50_INaL", 160),
+            ("IC50_ICaL", 161),
+            ("IC50_IKs", 162),
+            ("IC50_IK1", 163),
+            ("IC50_Ito", 164),
+            ("h_IKr", 165),
+            ("h_INa", 166),
+            ("h_INaL", 167),
+            ("h_ICaL", 168),
+            ("h_IKs", 169),
+            ("h_IK1", 170),
+            ("h_Ito", 171),
         ]
     )
 
@@ -1173,7 +1243,7 @@ def rhs(states, t, parameters, values=None):
     ) = states
 
     # Assign parameters
-    assert len(parameters) == 151
+    assert len(parameters) == 172
     scale_ICaL = parameters[0]
     scale_IK1 = parameters[1]
     scale_IKr = parameters[2]
@@ -1314,6 +1384,28 @@ def rhs(states, t, parameters, values=None):
     Tref_rate = parameters[148]
     rw_rate = parameters[149]
     rs_rate = parameters[150]
+    drug_IKr = parameters[151]
+    drug_INa = parameters[152]
+    drug_INaL = parameters[153]
+    drug_ICaL = parameters[154]
+    drug_IKs = parameters[155]
+    drug_IK1 = parameters[156]
+    drug_Ito = parameters[157]
+    IC50_IKr = parameters[158]
+    IC50_INa = parameters[159]
+    IC50_INaL = parameters[160]
+    IC50_ICaL = parameters[161]
+    IC50_IKs = parameters[162]
+    IC50_IK1 = parameters[163]
+    IC50_Ito = parameters[164]
+    h_IKr = parameters[165]
+    h_INa = parameters[166]
+    h_INaL = parameters[167]
+    h_ICaL = parameters[168]
+    h_IKs = parameters[169]
+    h_IK1 = parameters[170]
+    h_Ito = parameters[171]
+
 
     # Init return args
     if values is None:
@@ -1377,6 +1469,10 @@ def rhs(states, t, parameters, values=None):
     values[6] = (-jp + jss) / tjp
     fINap = 1.0 / (1.0 + KmCaMK / tmp_CaMKa)
     tmp_GNa = GNa*GNa_rate
+
+    if (drug_INa > 0):
+        tmp_GNa = tmp_GNa / (1 + (drug_INa/IC50_INa)**h_INa)
+
     INa = (
         tmp_GNa * math.pow(m, 3.0) * (-ENa + v) * ((1.0 - fINap) * h * j + fINap * hp * jp)
     )
@@ -1395,6 +1491,10 @@ def rhs(states, t, parameters, values=None):
     tmp_GNaL = GNaL* GNaL_rate
     if celltype==1:
         tmp_GNaL = tmp_GNaL*0.6
+
+    if (drug_INaL > 0):
+        tmp_GNaL = tmp_GNaL / (1 + (drug_INaL/IC50_INaL)**h_INaL)
+
     fINaLp = 1.0 / (1.0 + KmCaMK / tmp_CaMKa)
     INaL = (-ENa + v) * ((1.0 - fINaLp) * hL + fINaLp * hLp) * tmp_GNaL * mL
 
@@ -1439,6 +1539,10 @@ def rhs(states, t, parameters, values=None):
         tmp_Gto = tmp_Gto*4.0
     elif celltype==2:
         tmp_Gto = tmp_Gto*4.0
+    
+    if (drug_Ito > 0):
+        tmp_Gto = tmp_Gto / (1 + (drug_Ito/IC50_Ito)**h_Ito)
+
     Ito = tmp_Gto * (-EK + v) * ((1.0 - fItop) * a * i + ap * fItop * ip)
 
     # Expressions for the ICaL ICaNa ICaK component
@@ -1508,6 +1612,10 @@ def rhs(states, t, parameters, values=None):
         PCa = PCa*1.2
     elif celltype==2:
         PCa = PCa*2.5
+    
+    if (drug_ICaL > 0):
+        PCa = PCa / (1 + (drug_ICaL/IC50_ICaL)**h_ICaL)
+    
     PCap = 1.1 * PCa
     PCaNa = 0.00125 * PCa
     PCaK = 0.0003574 * PCa
@@ -1549,6 +1657,10 @@ def rhs(states, t, parameters, values=None):
         GKr = GKr*1.3
     elif celltype==2:
         GKr = GKr*0.8
+
+    if (drug_IKr > 0):
+        GKr = GKr / (1 + (drug_IKr/IC50_IKr)**h_IKr)
+
     IKr = 0.4303314829119352 * math.sqrt(ko) * (-EK + v) * GKr * rkr * xr
 
     # Expressions for the IKs component
@@ -1568,6 +1680,10 @@ def rhs(states, t, parameters, values=None):
     GKs = (0.0034 * scale_IKs) * GKs_rate
     if celltype==1:
         GKs = GKs*1.4
+    
+    if (drug_IKs > 0):
+        GKs = GKs / (1 + (drug_IKs/IC50_IKs)**h_IKs)
+    
     IKs = (-EKs + v) * GKs * KsCa * xs1 * xs2
     xk1ss = 1.0 / (1.0 + math.exp((-144.59 - v - 2.5538 * ko) / (3.8115 + 1.5692 * ko)))
     txk1 = 122.2 / (
@@ -1586,6 +1702,10 @@ def rhs(states, t, parameters, values=None):
         tmp_GK1 = tmp_GK1*1.2
     elif celltype==2:
         tmp_GK1 = tmp_GK1*1.3
+    
+    if (drug_IK1 > 0):
+        tmp_GK1 = tmp_GK1 / (1 + (drug_IK1/IC50_IK1)**h_IK1)
+
     IK1 = math.sqrt(ko) * (-EK + v) * tmp_GK1 * rk1 * xk1
 
     # Expressions for the INaCa_i component
@@ -1990,7 +2110,7 @@ def monitor(states, t, parameters, monitored=None):
     ) = states
 
     # Assign parameters
-    assert len(parameters) == 151
+    assert len(parameters) == 172
     scale_ICaL = parameters[0]
     scale_IK1 = parameters[1]
     scale_IKr = parameters[2]
@@ -2133,6 +2253,27 @@ def monitor(states, t, parameters, monitored=None):
     Tref_rate = parameters[148]
     rw_rate = parameters[149]
     rs_rate = parameters[150]
+    drug_IKr = parameters[151]
+    drug_INa = parameters[152]
+    drug_INaL = parameters[153]
+    drug_ICaL = parameters[154]
+    drug_IKs = parameters[155]
+    drug_IK1 = parameters[156]
+    drug_Ito = parameters[157]
+    IC50_IKr = parameters[158]
+    IC50_INa = parameters[159]
+    IC50_INaL = parameters[160]
+    IC50_ICaL = parameters[161]
+    IC50_IKs = parameters[162]
+    IC50_IK1 = parameters[163]
+    IC50_Ito = parameters[164]
+    h_IKr = parameters[165]
+    h_INa = parameters[166]
+    h_INaL = parameters[167]
+    h_ICaL = parameters[168]
+    h_IKs = parameters[169]
+    h_IK1 = parameters[170]
+    h_Ito = parameters[171]
 
 
     # Init return args
@@ -2198,6 +2339,10 @@ def monitor(states, t, parameters, monitored=None):
     monitored[267] = (-jp + monitored[16]) / monitored[21]
     monitored[22] = 1.0 / (1.0 + KmCaMK / monitored[8])
     tmp_GNa = GNa*GNa_rate
+
+    if (drug_INa > 0):
+        tmp_GNa = tmp_GNa / (1 + (drug_INa/IC50_INa)**h_INa)
+
     monitored[23] = (
         tmp_GNa
         * math.pow(m, 3.0)
@@ -2223,6 +2368,10 @@ def monitor(states, t, parameters, monitored=None):
     monitored[29] = (0.0075 * scale_INaL) * GNaL_rate
     if celltype==1:
         monitored[29] = monitored[29]*0.6
+    
+    if (drug_INaL > 0):
+        monitored[29] = monitored[29] / (1 + (drug_INaL/IC50_INaL)**h_INaL)
+
     monitored[30] = 1.0 / (1.0 + KmCaMK / monitored[8])
     monitored[31] = (
         (-monitored[142] + v)
@@ -2276,6 +2425,10 @@ def monitor(states, t, parameters, monitored=None):
         tmp_Gto = tmp_Gto*4.0
     elif celltype==2:
         tmp_Gto = tmp_Gto*4.0
+    
+    if (drug_Ito > 0):
+        tmp_Gto = tmp_Gto / (1 + (drug_Ito/IC50_Ito)**h_Ito)
+    
     monitored[47] = (
         tmp_Gto
         * (-monitored[143] + v)
@@ -2354,6 +2507,10 @@ def monitor(states, t, parameters, monitored=None):
         monitored[70] = monitored[70]*1.2
     elif celltype==2:
         monitored[70] = monitored[70]*2.5
+
+    if (drug_ICaL > 0):
+        monitored[70] = monitored[70] / (1 + (drug_ICaL/IC50_ICaL)**h_ICaL)
+
     monitored[71] = 1.1 * monitored[70]
     monitored[72] = 0.00125 * monitored[70]
     monitored[73] = 0.0003574 * monitored[70]
@@ -2423,6 +2580,10 @@ def monitor(states, t, parameters, monitored=None):
         monitored[87] = monitored[87]*1.3
     elif celltype==2:
         monitored[87] = monitored[87]*0.8
+
+    if (drug_IKr > 0):
+        monitored[87] = monitored[87] / (1 + (drug_IKr/IC50_IKr)**h_IKr)
+
     monitored[88] = (
         0.4303314829119352
         * math.sqrt(ko)
@@ -2451,6 +2612,10 @@ def monitor(states, t, parameters, monitored=None):
     monitored[94] = (0.0034 * scale_IKs) * GKs_rate
     if celltype==1:
         monitored[94] = monitored[94]*1.4
+    
+    if (drug_IKs > 0):
+        monitored[94] = monitored[94] / (1 + (drug_IKs/IC50_IKs)**h_IKs)
+
     monitored[95] = (-monitored[144] + v) * monitored[93] * monitored[94] * xs1 * xs2
     monitored[96] = 1.0 / (
         1.0 + math.exp((-144.59 - v - 2.5538 * ko) / (3.8115 + 1.5692 * ko))
@@ -2470,6 +2635,10 @@ def monitor(states, t, parameters, monitored=None):
         monitored[99] = monitored[99]*1.2
     elif celltype==2:
         monitored[99] = monitored[99]*1.3
+    
+    if (drug_IK1 > 0):
+        monitored[99] = monitored[99] / (1 + (drug_IK1/IC50_IK1)**h_IK1)
+
     monitored[100] = (
         math.sqrt(ko) * (-monitored[143] + v) * monitored[98] * monitored[99] * xk1
     )
