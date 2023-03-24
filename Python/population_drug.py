@@ -7,8 +7,6 @@ import sys
 
 from drug_values import drug_dict
 
-import time
-
 num_beats = 100
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
 pop_size = 1000
@@ -23,7 +21,7 @@ def run_population_drug(mech_type, hf_type, drug_type, part, cell_type='endo'):
     # list for new population
     population_drug = []
 
-    part_dict = {'1': [0,2], '2': [2,4], '3': [400,600], '4': [600,800], '5': [800,1000]}
+    part_dict = {'1': [0,200], '2': [200,400], '3': [400,600], '4': [600,800], '5': [800,1000]}
 
     for i in range(part_dict[part][0], part_dict[part][1]):
 
@@ -91,6 +89,7 @@ def run_population_drug(mech_type, hf_type, drug_type, part, cell_type='endo'):
         population_drug.append(y0)
     
     np.save(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_{part}.npy', population_drug, allow_pickle=True) 
+
 
 
 
