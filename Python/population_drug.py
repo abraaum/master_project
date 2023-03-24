@@ -24,7 +24,7 @@ def run_population_drug(mech_type, hf_type, drug_type, part, cell_type='endo'):
     part_dict = {'1': [0,200], '2': [200,400], '3': [400,600], '4': [600,800], '5': [800,1000]}
 
     for i in range(part_dict[part][0], part_dict[part][1]):
-
+        print(i)
         y0 = y0s[i]
 
         parameters = model.init_parameter_values(
