@@ -44,4 +44,40 @@ quinidine = {
     'drug_IK1':3237, 'IC50_IK1':4.0e7, 'h_IK1':0.4
     }
 
-drug_dict = {'dofetilide': dofetilide, 'verapamil': verapamil, 'quinidine': quinidine}
+bepridil = {
+    'drug_INa':33, 'IC50_INa':2300, 'h_INa':1.26,
+    'drug_IKr':33, 'IC50_IKr':149, 'h_IKr':1,
+    'drug_ICaL':33, 'IC50_ICaL':1000, 'h_ICaL':1.28,
+    'drug_INaL':33, 'IC50_INaL':1814, 'h_INaL':1.4,
+    'drug_IKs':33, 'IC50_IKs':6200, 'h_IKs':1,
+    'drug_Ito':33, 'IC50_Ito':8594, 'h_Ito':3.5,
+    'drug_IK1':0, 'IC50_IK1':0, 'h_IK1':0
+    }
+
+sotalol = {
+    'drug_INa':14690, 'IC50_INa':7.0e6, 'h_INa':1,
+    'drug_IKr':14690, 'IC50_IKr':2.90e5, 'h_IKr':1,
+    'drug_ICaL':14690, 'IC50_ICaL':7.1e7, 'h_ICaL':0.9,
+    'drug_INaL':14690, 'IC50_INaL':1.3e8, 'h_INaL':5.9,
+    'drug_IKs':14690, 'IC50_IKs':1100000, 'h_IKs':1,
+    'drug_Ito':14690, 'IC50_Ito':4.30e7, 'h_Ito':0.7,
+    'drug_IK1':14690, 'IC50_IK1':3050260, 'h_IK1':1.2
+    }
+
+azimilide = {
+    'drug_INa':70, 'IC50_INa':18400, 'h_INa':3.8,
+    'drug_IKr':70, 'IC50_IKr':380, 'h_IKr':1,
+    'drug_ICaL':70, 'IC50_ICaL':7500, 'h_ICaL':1,
+    'drug_INaL':70, 'IC50_INaL':3690, 'h_INaL':1.4,
+    'drug_IKs':70, 'IC50_IKs':1400, 'h_IKs':1,
+    'drug_Ito':0, 'IC50_Ito':0, 'h_Ito':0,
+    'drug_IK1':0, 'IC50_IK1':0, 'h_IK1':0
+    }
+
+drug_dict = {
+    'dofetilide': dofetilide, 
+    'verapamil': verapamil, 
+    'quinidine': quinidine,
+    'bepridil': bepridil,
+    'sotalol': sotalol, 
+    'azimilide': azimilide}

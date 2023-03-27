@@ -107,36 +107,25 @@ def conc_del_pop(mech_type, hf_type, drug_type):
     arr3 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_3.npy')
     arr4 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_4.npy')
     arr5 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_5.npy')
-    #arr6 = np.load(f'population_{mech_type}_{hf_type}_{drug_type}_6.npy')
-    #arr7 = np.load(f'population_{mech_type}_{hf_type}_{drug_type}_7.npy')
-    #arr8 = np.load(f'population_{mech_type}_{hf_type}_{drug_type}_8.npy')
-    #arr9 = np.load(f'population_{mech_type}_{hf_type}_{drug_type}_9.npy')
-    #arr10 = np.load(f'population_{mech_type}_{hf_type}_{drug_type}_10.npy')
+    arr6 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_6.npy')
+    arr7 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_7.npy')
+    arr8 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_8.npy')
+    arr9 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_9.npy')
+    arr10 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_10.npy')
 
 
-    full_arr = np.concatenate((arr1, arr2, arr3, arr4, arr5), axis=0)
-    #, arr6, arr7, arr8, arr9, arr10
+    full_arr = np.concatenate((arr1, arr2, arr3, arr4, arr5, arr6, arr7, arr8, arr9, arr10), axis=0)
+    #
 
 
     np.save(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}.npy', full_arr)
 
-    for i in range(1, 6):
+    for i in range(1, 11):
         os.remove(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_{i}.npy')
 
 
 if __name__ == '__main__':
-    #start = time.time()
-    #proc = []
-    #for i in range(1,11):
-    #    p = Process(target=run_population_drug, args=('iso', 'control', str(i), 'dofetilide'))
-    #    p.start()
-    #    proc.append(p)
-    #for p in proc:
-    #    p.join()
-    
-    #end = time.time()
-    #print(end-start)
-    start = time.time()
+    drug = sys.argv[1]
     mech = ['iso', 'dyn']
     hf = ['control', 'gomez']
 
@@ -144,15 +133,14 @@ if __name__ == '__main__':
     for m in mech:
         for h in hf:
             for i in range(1,11):
-                p = Process(target=run_population_drug, args=(m, h, str(i), 'dofetilide'))
+                p = Process(target=run_population_drug, args=(m, h, str(i), drug))
                 p.start()
                 proc.append(p)
     for p in proc:
         p.join()
     
-    end = time.time()
-    print(end-start)
-
-    #conc_del_pop('iso', 'control', 'quinidine')
+    for m in mech:
+        for h in hf:
+            conc_del_pop(m, h, drug)
 
     
