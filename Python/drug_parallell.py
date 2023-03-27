@@ -125,18 +125,31 @@ def conc_del_pop(mech_type, hf_type, drug_type):
 
 
 if __name__ == '__main__':
-    start = time.time()
+    #start = time.time()
+    #proc = []
+    #for i in range(1,11):
+    #    p = Process(target=run_population_drug, args=('iso', 'control', str(i), 'dofetilide'))
+    #    p.start()
+    #    proc.append(p)
+    #for p in proc:
+    #    p.join()
+    
+    #end = time.time()
+    #print(end-start)
+    
+    mech = ['iso', 'dyn']
+    hf = ['control', 'gomez']
+
     proc = []
-    for i in range(1,11):
-        p = Process(target=run_population_drug, args=('iso', 'control', str(i), 'dofetilide'))
-        p.start()
-        proc.append(p)
+    for m in mech:
+        for h in hf:
+            for i in range(1,11):
+                p = Process(target=run_population_drug, args=(m, h, str(i), 'dofetilide'))
+                p.start()
+                proc.append(p)
     for p in proc:
         p.join()
-    
-    end = time.time()
-    print(end-start)
 
-    #conc_del_pop('dyn', 'control', 'verapamil')
+    #conc_del_pop('iso', 'control', 'quinidine')
 
     
