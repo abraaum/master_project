@@ -13,7 +13,7 @@ import os
 
 from drug_values import drug_dict
 
-num_beats = 10
+num_beats = 100
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
 pop_size = 1000
 
@@ -28,8 +28,8 @@ def run_population_drug(mech_type, hf_type, part, drug_type, cell_type='endo'):
     population_drug = []
 
     part_dict = {
-        '1': [0,10], '2': [10,20], '3': [20,30], '4': [30,40], '5': [40,50], 
-        '6': [50,60], '7': [60,70], '8': [70,80], '9': [80,90], '10': [90,100]
+        '1': [0,100], '2': [100,200], '3': [200,300], '4': [300,400], '5': [400,500], 
+        '6': [500,600], '7': [600,700], '8': [700,800], '9': [800,900], '10': [900,1000]
         }
 
     for i in range(part_dict[part][0], part_dict[part][1]):
