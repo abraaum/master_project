@@ -136,7 +136,7 @@ if __name__ == '__main__':
     
     #end = time.time()
     #print(end-start)
-    
+    start = time.time()
     mech = ['iso', 'dyn']
     hf = ['control', 'gomez']
 
@@ -149,6 +149,9 @@ if __name__ == '__main__':
                 proc.append(p)
     for p in proc:
         p.join()
+    
+    end = time.time()
+    print(end-start)
 
     #conc_del_pop('iso', 'control', 'quinidine')
 
