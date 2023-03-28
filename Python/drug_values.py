@@ -244,6 +244,56 @@ risperidone = {
     'drug_Ito':0, 'IC50_Ito':0, 'h_Ito':0
     }
 
+loratadine = {
+    'drug_IKr':0.45, 'IC50_IKr':1.30e3, 'h_IKr':1,
+    'drug_INa':0.45, 'IC50_INa':28.9, 'h_INa':1.64,
+    'drug_INaL':0.45, 'IC50_INaL':937, 'h_INaL':2.8,
+    'drug_ICaL':0.45, 'IC50_ICaL':11400, 'h_ICaL':1.2,
+    'drug_IKs':0, 'IC50_IKs':0, 'h_IKs':0,
+    'drug_IK1':0, 'IC50_IK1':0, 'h_IK1':0,
+    'drug_Ito':0, 'IC50_Ito':0, 'h_Ito':0
+    }
+
+metoprolol = {
+    'drug_IKr':450, 'IC50_IKr':1.10e5, 'h_IKr':1,
+    'drug_INa':450, 'IC50_INa':145000, 'h_INa':1.1,
+    'drug_INaL':450, 'IC50_INaL':24500, 'h_INaL':0.77,
+    'drug_ICaL':450, 'IC50_ICaL':398000, 'h_ICaL':0.91,
+    'drug_IKs':0, 'IC50_IKs':0, 'h_IKs':0,
+    'drug_IK1':0, 'IC50_IK1':0, 'h_IK1':0,
+    'drug_Ito':0, 'IC50_Ito':0, 'h_Ito':0
+    }
+
+nifedipine = {
+    'drug_IKr':7.7, 'IC50_IKr':7.10e4, 'h_IKr':1,
+    'drug_INa':7.7, 'IC50_INa':46300, 'h_INa':2.5,
+    'drug_INaL':7.7, 'IC50_INaL':793, 'h_INaL':0.81,
+    'drug_ICaL':7.7, 'IC50_ICaL':56, 'h_ICaL':1,
+    'drug_IKs':7.7, 'IC50_IKs':360000, 'h_IKs':0.97,
+    'drug_IK1':0, 'IC50_IK1':0, 'h_IK1':0,
+    'drug_Ito':0, 'IC50_Ito':0, 'h_Ito':0
+    }
+
+nitrendipine = {
+    'drug_IKr':3.02, 'IC50_IKr':2.00e4, 'h_IKr':1,
+    'drug_INa':3.02, 'IC50_INa':11100, 'h_INa':1.4,
+    'drug_INaL':3.02, 'IC50_INaL':358, 'h_INaL':0.9,
+    'drug_ICaL':3.02, 'IC50_ICaL':25, 'h_ICaL':0.78,
+    'drug_IKs':0, 'IC50_IKs':0, 'h_IKs':0,
+    'drug_IK1':0, 'IC50_IK1':0, 'h_IK1':0,
+    'drug_Ito':0, 'IC50_Ito':0, 'h_Ito':0
+    }
+
+tamoxifen = {
+    'drug_IKr':21, 'IC50_IKr':1.70e3, 'h_IKr':1,
+    'drug_INa':21, 'IC50_INa':9590, 'h_INa':3.6,
+    'drug_INaL':21, 'IC50_INaL':4310, 'h_INaL':4.8,
+    'drug_ICaL':21, 'IC50_ICaL':3610, 'h_ICaL':6.7,
+    'drug_IKs':0, 'IC50_IKs':0, 'h_IKs':0,
+    'drug_IK1':0, 'IC50_IK1':0, 'h_IK1':0,
+    'drug_Ito':0, 'IC50_Ito':0, 'h_Ito':0
+    }
+
 drug_dict = {
     'dofetilide': dofetilide, 
     'verapamil': verapamil, 
@@ -263,4 +313,13 @@ drug_dict = {
     'ranolazine': ranolazine,
     'astemizole': astemizole,
     'clozapine': clozapine,
-    'domperidone': domperidone}
+    'domperidone': domperidone,
+    'droperidol': droperidol,
+    'pimozide': pimozide,
+    'risperidone': risperidone, 
+    'loratadine': loratadine, 
+    'metoprolol': metoprolol,
+    'nifedipine': nifedipine,
+    'nitrendipine': nitrendipine,
+    'tamoxifen': tamoxifen,
+    'clarithromycin': clarithromycin}
