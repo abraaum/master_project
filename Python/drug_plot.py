@@ -8,27 +8,27 @@ import matplotlib.pyplot as plt
 import tqdm
 import sys
 import os
+import itertools
 
 from drug_values import drug_dict
 
-num_beats = 100
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
 pop_size = 1000
 
-def run_population_drug(mech_type, hf_type, part, drug_type, cell_type='endo'):
+def get_pop_drug_val(mech_type, hf_type, part, drug_type, cell_type='endo'):
     """Run the population model with different drugs.
     """
     # load random sampling values
     rand_val = np.load(f'init_pop/rand_sample_iso_control.npy')
     # load specific population
-    y0s = np.load(f'init_pop/population_{mech_type}_{hf_type}.npy') 
-    # list for new population
-    population_drug = []
+    y0s = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}.npy') 
 
     part_dict = {
-        '1': [0,100], '2': [100,200], '3': [200,300], '4': [300,400], '5': [400,500], 
-        '6': [500,600], '7': [600,700], '8': [700,800], '9': [800,900], '10': [900,1000]
+        '1': [0,200], '2': [200,400], '3': [400,600], '4': [600,800], '5': [800,1000], 
+        #'6': [500,600], '7': [600,700], '8': [700,800], '9': [800,900], '10': [900,1000]
         }
+    
+    Vs, Cais, Tas, CaTrpns = [], [], [], []
 
     for i in range(part_dict[part][0], part_dict[part][1]):
         print(i)
@@ -89,56 +89,89 @@ def run_population_drug(mech_type, hf_type, part, drug_type, cell_type='endo'):
             h_IK1=drug_dict[drug_type]['h_IK1'],
         )
 
-        for n in tqdm.tqdm(range(num_beats)):
-            y = odeint(model.rhs, y0, tsteps, args=(parameters,))
-            y0 = y[-1]
-        
-        population_drug.append(y0)
+        y = odeint(model.rhs, y0, tsteps, args=(parameters,))
+
+        monitor = np.array([model.monitor(r, t, parameters) for r, t in zip(y, tsteps)])
+        V = y.T[model.state_indices("v")]
+        Cai = y.T[model.state_indices("cai")]
+        Ta = monitor.T[model.monitor_indices("Ta")]
+        CaTrpn = y.T[model.state_indices("CaTrpn")]
+
+        Vs.append(V)
+        Cais.append(Cai)
+        Tas.append(Ta)
+        CaTrpns.append(CaTrpn)
     
-    np.save(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_{part}.npy', population_drug, allow_pickle=True) 
+    full_lst = [Vs, Cais, Tas, CaTrpns]
+    
+    np.save(f'val_{mech_type}_{hf_type}_{drug_type}_{part}.npy', full_lst, allow_pickle=True) 
+
+            
+def plot_pop_drug(mech_type, hf_type, drug_type):
+
+    Vs, Cais, Tas, CaTrpns = [], [], [], []
+
+    for i in range(1,6):
+        arr = np.load(f'val_{mech_type}_{hf_type}_{drug_type}_{i}.npy')
+        Vs.append(arr[0])
+        Cais.append(arr[1])
+        Tas.append(arr[2])
+        CaTrpns.append(arr[3])
+        # delete the file after
+        # os.remove(f'val_{mech_type}_{hf_type}_{drug_type}_{i}.npy')
 
 
-def conc_del_pop(mech_type, hf_type, drug_type):
-    # Merge together population again
-    arr1 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_1.npy')
-    arr2 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_2.npy')
-    arr3 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_3.npy')
-    arr4 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_4.npy')
-    arr5 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_5.npy')
-    arr6 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_6.npy')
-    arr7 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_7.npy')
-    arr8 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_8.npy')
-    arr9 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_9.npy')
-    arr10 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_10.npy')
+    
+    V = list(itertools.chain(*Vs))
+    Cai = list(itertools.chain(*Cais))
+    Ta = list(itertools.chain(*Tas))
+    CaTrpn = list(itertools.chain(*CaTrpns))
 
+    fig, ax = plt.subplots(2, 2, sharex=True, figsize=(14,8))
 
-    full_arr = np.concatenate((arr1, arr2, arr3, arr4, arr5, arr6, arr7, arr8, arr9, arr10), axis=0)
-    #
+    for i in range(1000):
+        ax[0][0].plot(tsteps, V[i], linewidth=0.7, alpha=0.5, color='lightskyblue')
+        ax[0][0].set_title("Voltage")
+        ax[0][0].set_ylabel("Voltage (mV)")
+        ax[0][0].set_xlabel("Time (ms)")
+        ax[0][0].grid(linewidth=0.3)
 
+        ax[0][1].plot(tsteps, Cai[i], linewidth=0.7, alpha=0.5, color='lightskyblue')
+        ax[0][1].set_title("Cai")
+        ax[0][1].set_ylabel("Ca_i (mM)")
+        ax[0][1].set_xlabel("Time (ms)")
+        ax[0][1].grid(linewidth=0.3)
 
-    np.save(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}.npy', full_arr)
+        ax[1][0].plot(tsteps, Ta[i], linewidth=0.7, alpha=0.5, color='lightskyblue')
+        ax[1][0].set_title("Ta")
+        ax[1][0].set_ylabel("Ta (kPa)")
+        ax[1][0].set_xlabel("Time (ms)")
+        ax[1][0].grid(linewidth=0.3)
 
-    for i in range(1, 11):
-        os.remove(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_{i}.npy')
+        ax[1][1].plot(tsteps, CaTrpn[i], linewidth=0.7, alpha=0.5, color='lightskyblue')
+        ax[1][1].set_title("CaTrpn")
+        ax[1][1].set_ylabel("CaTrpn")
+        ax[1][1].set_xlabel("Time (ms)")
+        ax[1][1].grid(linewidth=0.3)
+    
+    plt.show()
+
+    
+    
 
 
 if __name__ == '__main__':
-    drug = sys.argv[1]
-    mech = ['iso', 'dyn']
-    hf = ['control', 'gomez']
-
+    """ 
     proc = []
-    for m in mech:
-        for h in hf:
-            for i in range(1,11):
-                p = Process(target=run_population_drug, args=(m, h, str(i), drug))
-                p.start()
-                proc.append(p)
+    for i in range(1,6):
+        p = Process(
+            target=get_pop_drug_val, 
+            args=('iso', 'control', str(i), 'verapamil')
+            )
+        p.start()
+        proc.append(p)
     for p in proc:
         p.join()
+    """
     
-    for m in mech:
-        for h in hf:
-            conc_del_pop(m, h, drug)
-
-    
+    plot_pop_drug('iso', 'control', 'verapamil')
