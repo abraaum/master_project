@@ -107,7 +107,7 @@ def df_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
         RMP, V_peak, diast_Ca, syst_Ca = state_biomarkers(y=y)
 
         #mssing
-        # dvdt_min, CaTA, ttpV, ttpC, EAD, repol_fail, qNet, DevF
+        # CaTA, EAD, repol_fail, qNet, DevF
 
         biomarkers.append(
             {

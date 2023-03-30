@@ -84,6 +84,11 @@ def monitored_biomarkers(monitor):
 
     return Ta_max_idx, min(Ta), max(Ta), max(dvdt)
 
+def extra_biomarkers_drug(monitor):
+    dvdt = monitor.T[model.monitor_indices("dv_dt")]
+    dcaidt = monitor.T[model.monitor_indices("dcai_dt")]
+    inet = monitor.T[model.monitor_indices("Inet")]
+
 
 
 #################################
