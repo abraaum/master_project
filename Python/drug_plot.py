@@ -146,17 +146,8 @@ def plot_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
     
 
 if __name__ == '__main__':
-    drug = sys.argv[1]
-    mech = ['iso', 'dyn']
-    hf = ['control', 'gomez']
-    start = time.time()
-    proc = []
-    for m in mech:
-        for h in hf:
-            p = Process(target=plot_pop_drug, args=(m, h, drug))
-            p.start()
-            proc.append(p)
-    for p in proc:
-        p.join()
-    end = time.time()
-    print(end-start)
+    
+    mech = sys.argv[1]
+    hf = sys.argv[2]
+    drug = sys.argv[3]
+    plot_pop_drug(mech_type=mech, hf_type=hf, drug_type=drug,)
