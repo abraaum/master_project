@@ -1169,6 +1169,7 @@ def monitor_indices(*monitored):
             ("Fse", 312),
             ("Fpre", 313),
             ("dLambda_dt", 314),
+            ("Inet", 315),
         ]
     )
 
@@ -2278,9 +2279,9 @@ def monitor(states, t, parameters, monitored=None):
 
     # Init return args
     if monitored is None:
-        monitored = np.zeros((315,), dtype=np.float_)
+        monitored = np.zeros((316,), dtype=np.float_)
     else:
-        assert isinstance(monitored, np.ndarray) and monitored.shape == (315,)
+        assert isinstance(monitored, np.ndarray) and monitored.shape == (316,)
 
     # Expressions for the cell geometry component
     monitored[0] = 3140.0 * L * (rad * rad)
@@ -3131,6 +3132,9 @@ def monitor(states, t, parameters, monitored=None):
         dLambda = 0 
 
     monitored[314] = dLambda
+
+    #Inet
+    monitored[315] = monitored[77] + monitored[31] + monitored[88] + monitored[95] + monitored[47] + monitored[100]
 
     # Return results
     return monitored
