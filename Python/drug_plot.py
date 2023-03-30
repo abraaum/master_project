@@ -13,7 +13,7 @@ import itertools
 from drug_values import drug_dict
 
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
-pop_size = 10
+pop_size = 1000
 
 def plot_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
     """Run the population model with different drugs.
