@@ -12,7 +12,7 @@ import pandas as pd
 
 
 from drug_values import drug_dict
-from population_func import apd_values, catd_values, tad_values, state_biomarkers, monitored_biomarkers 
+from population_func import apd_values, catd_values, tad_values, state_biomarkers, monitored_biomarkers , extra_biomarkers_drug
 
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
 pop_size = 10
@@ -108,6 +108,9 @@ def df_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
 
         #mssing
         # CaTA, EAD, repol_fail, qNet, DevF
+        CaTA = abs(diast_Ca, syst_Ca)
+        DevF = abs(Ta_min, Ta_max)
+        EAD, pos_calc, repol_fail, qNet = extra_biomarkers_drug(monitor, y)
 
         biomarkers.append(
             {
@@ -130,7 +133,14 @@ def df_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
                 'RMP': RMP, 
                 'V_peak': V_peak, 
                 'diast_Ca': diast_Ca, 
-                'syst_Ca': syst_Ca
+                'syst_Ca': syst_Ca,
+                'CaTA': CaTA,
+                'DevF': DevF,
+                'EAD': EAD,
+                'pos_calc': pos_calc,
+                'repol_fail': repol_fail,
+                'qNet': qNet
+
             }
         )
 

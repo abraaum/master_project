@@ -12,6 +12,7 @@ import os
 import matplotlib.pyplot as plt
 import tqdm
 import pandas as pd
+from multiprocessing import Process
 
 
 inc = np.arange(0.8, 1.201, 0.05).round(decimals=2)  # real run 0.01
@@ -33,6 +34,12 @@ def isometric_sensitivity(hf_type, cell_type, mech_param, out=None):
             y0 = np.load(
                 f"init_values/coupled/{hf_type}_{cell_type}_coupled_iso_{lamfile[l]}.npy"
             )
+            #cat50ref new implementation (Mora/Land)
+            cat = 1
+            if mech_param=='cat50ref':
+                cat = inc[i]
+            if hf_type=='gomez':
+                cat *= 0.7
             parameters = model.init_parameter_values(
                 celltype=0 if cell_type == "endo" else 1 if cell_type == "epi" else 2,
                 isometric=1,
@@ -48,7 +55,7 @@ def isometric_sensitivity(hf_type, cell_type, mech_param, out=None):
                 rs_rate=inc[i] if mech_param=='rs' else 1,
                 rw_rate=inc[i] if mech_param=='rw' else 1,
                 Tref_rate=inc[i] if mech_param=='Tref' else 1,
-                cat50ref_rate=inc[i] if mech_param=='cat50ref' else 1,
+                cat50ref_rate=cat,
                 ntm_rate=inc[i] if mech_param=='ntm' else 1,
                 #HF parameters
                 GNaL_rate=1.80 if hf_type=='gomez' else 1,
@@ -120,6 +127,12 @@ def dynamic_sensitivity(hf_type, cell_type, mech_param, out=None):
             y0 = np.load(
                 f"init_values/coupled/{hf_type}_{cell_type}_coupled_dyn_{lamfile_dyn[l]}.npy"
             )
+            #cat50ref new implementation (Mora/Land)
+            cat = 1
+            if mech_param=='cat50ref':
+                cat = inc[i]
+            if hf_type=='gomez':
+                cat *= 0.7
             parameters = model.init_parameter_values(
                 celltype=0 if cell_type == "endo" else 1 if cell_type == "epi" else 2,
                 isometric=0,
@@ -135,7 +148,7 @@ def dynamic_sensitivity(hf_type, cell_type, mech_param, out=None):
                 rs_rate=inc[i] if mech_param=='rs' else 1,
                 rw_rate=inc[i] if mech_param=='rw' else 1,
                 Tref_rate=inc[i] if mech_param=='Tref' else 1,
-                cat50ref_rate=inc[i] if mech_param=='cat50ref' else 1,
+                cat50ref_rate=cat,
                 ntm_rate=inc[i] if mech_param=='ntm' else 1,
                 #HF parameters
                 GNaL_rate=1.80 if hf_type=='gomez' else 1,
@@ -204,7 +217,7 @@ def dynamic_sensitivity(hf_type, cell_type, mech_param, out=None):
 
 if __name__ == "__main__":
     type_hf = ['gomez',] #'control', 
-    params = ['ntm'] # 'ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 
+    params = ['ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref','ntm'] # 'ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 
 
 
     for i in range(len(type_hf)):
@@ -213,10 +226,10 @@ if __name__ == "__main__":
                 hf_type=type_hf[i], 
                 cell_type='endo', 
                 mech_param=params[j], 
-                out=f'sens_iso_{type_hf[i]}_endo_{params[j]}.npy')
+                out=f'sens_iso_{type_hf[i]}_endo_{params[j]}_NEW.npy')
     
-    type_hf_d = ['control', 'gomez',] #
-    params_d = ['rs', 'rw', 'Tref', 'cat50ref', 'ntm'] # 'ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 
+    type_hf_d = ['gomez'] #'control', 
+    params_d = ['ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 'ntm'] # 'ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 
 
 
     for i in range(len(type_hf_d)):
@@ -225,7 +238,7 @@ if __name__ == "__main__":
                 hf_type=type_hf_d[i], 
                 cell_type='endo', 
                 mech_param=params_d[j], 
-                out=f'sens_dyn_{type_hf_d[i]}_endo_{params_d[j]}.npy')
+                out=f'sens_dyn_{type_hf_d[i]}_endo_{params_d[j]}_NEW.npy')
 
 
     #V, Cai, Ta, CaTrpn = load_sensitivity_values("test.npy")

@@ -84,10 +84,34 @@ def monitored_biomarkers(monitor):
 
     return Ta_max_idx, min(Ta), max(Ta), max(dvdt)
 
-def extra_biomarkers_drug(monitor):
+def extra_biomarkers_drug(monitor, y):
+    """Extra biomarkers for drug trials"""
     dvdt = monitor.T[model.monitor_indices("dv_dt")]
     dcaidt = monitor.T[model.monitor_indices("dcai_dt")]
-    inet = monitor.T[model.monitor_indices("Inet")]
+    Inet = monitor.T[model.monitor_indices("Inet")]
+    V = y.T[model.state_indices('v')]
+
+    if np.any(dvdt[1000:] > 0):
+        EAD = True
+    else:
+        EAD = False 
+    if np.any(dcaidt[3000:] > 0):
+        pos_calc = True
+    else: 
+        pos_calc = False
+    if V[-1] > min(V): #or > -40 AGATHE: PICK VALUE (-50)
+        repol_fail = True
+    else:
+        repol_fail = False 
+
+    qNet = np.trapz(Inet) # test different dx=1000
+
+    return EAD, pos_calc, repol_fail, qNet
+
+
+
+
+
 
 
 

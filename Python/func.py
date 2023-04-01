@@ -165,6 +165,8 @@ def get_init_param_coupled(hf_type='control', cell_type=0, lam=1, iso=0):
             thl_rate=1.80,
             Jrel_inf_sensitivity=0.80,
             Jrel_infp_sensitivity=0.80,
+            #mechanical
+            cat50ref_rate=0.7
             )
     if hf_type == 'gomez_hetero':
         # HF heterogenous transmural ionic remodelling, Gomez 2014 (table 2)
@@ -194,25 +196,40 @@ if __name__ == "__main__":
     #params = get_init_param_coupled(hf_type='control', cell_type=0, lam=0.9, iso=1)
     #y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=0.9, out='control_endo_coupled_iso_090.npy')
 
+    params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=0.9, iso=1)
+    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=0.9, out='gomez_endo_coupled_iso_090_NEW.npy')
+
+    params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=0.95, iso=1)
+    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=0.95, out='gomez_endo_coupled_iso_095_NEW.npy')
+
+    params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=1, iso=1)
+    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1, out='gomez_endo_coupled_iso_100_NEW.npy')
+
+    params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=1.05, iso=1)
+    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.05, out='gomez_endo_coupled_iso_105_NEW.npy')
+
+    params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=1.1, iso=1)
+    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.1, out='gomez_endo_coupled_iso_110_NEW.npy')
+
     #example coupled dynamic lmbda
     
-    params = get_init_param_coupled(hf_type='control', cell_type=0, lam=1.0, iso=0)
-    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.0, out='control_endo_coupled_dyn_100.npy')
+    #params = get_init_param_coupled(hf_type='control', cell_type=0, lam=1.0, iso=0)
+    #y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.0, out='control_endo_coupled_dyn_100.npy')
 
-    params = get_init_param_coupled(hf_type='control', cell_type=0, lam=1.05, iso=0)
-    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.05, out='control_endo_coupled_dyn_105.npy')
+    #params = get_init_param_coupled(hf_type='control', cell_type=0, lam=1.05, iso=0)
+    #y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.05, out='control_endo_coupled_dyn_105.npy')
 
-    params = get_init_param_coupled(hf_type='control', cell_type=0, lam=1.10, iso=0)
-    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.10, out='control_endo_coupled_dyn_110.npy')
+    #params = get_init_param_coupled(hf_type='control', cell_type=0, lam=1.10, iso=0)
+    #y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.10, out='control_endo_coupled_dyn_110.npy')
 
-    params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=1.0, iso=0)
-    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.0, out='gomez_endo_coupled_dyn_100.npy')
+    #params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=1.0, iso=0)
+    #y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.0, out='gomez_endo_coupled_dyn_100_NEW.npy')
 
-    params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=1.05, iso=0)
-    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.05, out='gomez_endo_coupled_dyn_105.npy')
+    #params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=1.05, iso=0)
+    #y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.05, out='gomez_endo_coupled_dyn_105_NEW.npy')
 
-    params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=1.10, iso=0)
-    y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.10, out='gomez_endo_coupled_dyn_110.npy')
+    #params = get_init_param_coupled(hf_type='gomez', cell_type=0, lam=1.10, iso=0)
+    #y, tsteps = run_Ordmm_Land(parameters=params, num_beats=1000, lam=1.10, out='gomez_endo_coupled_dyn_110_NEW.npy')
 
 
  
