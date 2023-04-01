@@ -32,7 +32,7 @@ def isometric_sensitivity(hf_type, cell_type, mech_param, out=None):
         Vs, Cais, Tas, CaTrpns = [], [], [], []
         for i in range(len(inc)):
             y0 = np.load(
-                f"init_values/coupled/{hf_type}_{cell_type}_coupled_iso_{lamfile[l]}.npy"
+                f"init_values/coupled/{hf_type}_{cell_type}_coupled_iso_{lamfile[l]}_NEW.npy"
             )
             #cat50ref new implementation (Mora/Land)
             cat = 1
@@ -125,7 +125,7 @@ def dynamic_sensitivity(hf_type, cell_type, mech_param, out=None):
         Vs, Cais, Tas, CaTrpns, lmbdas = [], [], [], [], []
         for i in range(len(inc)):
             y0 = np.load(
-                f"init_values/coupled/{hf_type}_{cell_type}_coupled_dyn_{lamfile_dyn[l]}.npy"
+                f"init_values/coupled/{hf_type}_{cell_type}_coupled_dyn_{lamfile_dyn[l]}_NEW.npy"
             )
             #cat50ref new implementation (Mora/Land)
             cat = 1

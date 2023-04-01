@@ -37,7 +37,7 @@ def make_population(hf_type, cell_type, mech_type, part):
     for i in range(part_dict[part][0], part_dict[part][1]):
         print(i)
         y0 = np.load(
-            f"init_values/coupled/{hf_type}_{cell_type}_coupled_{mech_type}_100.npy"
+            f"init_values/coupled/{hf_type}_{cell_type}_coupled_{mech_type}_100_NEW.npy"
         )
         parameters = model.init_parameter_values(
             celltype=0 if cell_type == "endo" else 1 if cell_type == "epi" else 2,
@@ -54,7 +54,7 @@ def make_population(hf_type, cell_type, mech_type, part):
             rs_rate=rand_val[i][7],
             rw_rate=rand_val[i][8],
             Tref_rate=rand_val[i][9],
-            cat50ref_rate=rand_val[i][10],
+            cat50ref_rate=(rand_val[i][10])*0.7 if hf_type=='gomez' else rand_val[i][10],
             ntm_rate=rand_val[i][11],
             #HF parameters
             GNaL_rate=1.80 if hf_type=='gomez' else 1,
@@ -78,7 +78,7 @@ def make_population(hf_type, cell_type, mech_type, part):
 
         population.append(y0)
 
-    np.save(f'init_pop/population_{mech_type}_{hf_type}_{part}.npy', population, allow_pickle=True) 
+    np.save(f'init_pop/population_{mech_type}_{hf_type}_{part}_NEW.npy', population, allow_pickle=True) 
     
 
 def clean_population(hf_type='control', cell_type='endo', mech_type='iso'):
@@ -195,6 +195,6 @@ if __name__ == "__main__":
     partition = sys.argv[1]
     make_population(hf_type='gomez', cell_type='endo', mech_type='iso', part=partition)
     make_population(hf_type='gomez', cell_type='endo', mech_type='dyn', part=partition)
-    make_population(hf_type='control', cell_type='endo', mech_type='dyn', part=partition)
+    #make_population(hf_type='control', cell_type='endo', mech_type='dyn', part=partition)
     
     #clean_population(hf_type='control', cell_type='endo', mech_type='dyn')
