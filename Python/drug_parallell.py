@@ -21,7 +21,7 @@ def run_population_drug(mech_type, hf_type, part, drug_type, cell_type='endo'):
     # load random sampling values
     rand_val = np.load(f'init_pop/rand_sample_iso_control.npy')
     # load specific population
-    y0s = np.load(f'init_pop/population_{mech_type}_{hf_type}.npy') 
+    y0s = np.load(f'init_pop/population_{mech_type}_{hf_type}_NEW.npy') 
     # list for new population
     population_drug = []
 
@@ -49,7 +49,7 @@ def run_population_drug(mech_type, hf_type, part, drug_type, cell_type='endo'):
             rs_rate=rand_val[i][7],
             rw_rate=rand_val[i][8],
             Tref_rate=rand_val[i][9],
-            cat50ref_rate=rand_val[i][10],
+            cat50ref_rate=(rand_val[i][10])*0.7 if hf_type=='gomez' else rand_val[i][10],
             ntm_rate=rand_val[i][11],
             #HF parameters
             GNaL_rate=1.80 if hf_type=='gomez' else 1,
@@ -95,37 +95,37 @@ def run_population_drug(mech_type, hf_type, part, drug_type, cell_type='endo'):
         
         population_drug.append(y0)
     
-    np.save(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_{part}.npy', population_drug, allow_pickle=True) 
+    np.save(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_{part}_NEW.npy', population_drug, allow_pickle=True) 
 
 
 def conc_del_pop(mech_type, hf_type, drug_type):
     # Merge together population again
-    arr1 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_1.npy')
-    arr2 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_2.npy')
-    arr3 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_3.npy')
-    arr4 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_4.npy')
-    arr5 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_5.npy')
-    arr6 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_6.npy')
-    arr7 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_7.npy')
-    arr8 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_8.npy')
-    arr9 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_9.npy')
-    arr10 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_10.npy')
+    arr1 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_1_NEW.npy')
+    arr2 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_2_NEW.npy')
+    arr3 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_3_NEW.npy')
+    arr4 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_4_NEW.npy')
+    arr5 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_5_NEW.npy')
+    arr6 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_6_NEW.npy')
+    arr7 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_7_NEW.npy')
+    arr8 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_8_NEW.npy')
+    arr9 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_9_NEW.npy')
+    arr10 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_10_NEW.npy')
 
 
     full_arr = np.concatenate((arr1, arr2, arr3, arr4, arr5, arr6, arr7, arr8, arr9, arr10), axis=0)
     #
 
 
-    np.save(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}.npy', full_arr)
+    np.save(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_NEW.npy', full_arr)
 
     for i in range(1, 11):
-        os.remove(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_{i}.npy')
+        os.remove(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_{i}_NEW.npy')
 
 
 if __name__ == '__main__':
     drug = sys.argv[1]
     mech = ['iso', 'dyn']
-    hf = ['control', 'gomez']
+    hf = ['gomez'] #'control', 
 
     proc = []
     for m in mech:

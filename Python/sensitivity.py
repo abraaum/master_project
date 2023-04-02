@@ -216,20 +216,20 @@ def dynamic_sensitivity(hf_type, cell_type, mech_param, out=None):
 
 
 if __name__ == "__main__":
-    type_hf = ['gomez',] #'control', 
-    params = ['ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref','ntm'] # 'ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 
+    #type_hf = ['gomez',] #'control', 
+    #params = ['ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref','ntm'] # 'ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 
 
 
-    for i in range(len(type_hf)):
-        for j in range(len(params)):
-            V, Cai, Ta, CaTrpn = isometric_sensitivity(
-                hf_type=type_hf[i], 
-                cell_type='endo', 
-                mech_param=params[j], 
-                out=f'sens_iso_{type_hf[i]}_endo_{params[j]}_NEW.npy')
+    #for i in range(len(type_hf)):
+    #    for j in range(len(params)):
+    #        V, Cai, Ta, CaTrpn = isometric_sensitivity(
+    #            hf_type=type_hf[i], 
+    #            cell_type='endo', 
+    #            mech_param=params[j], 
+    #            out=f'sens_iso_{type_hf[i]}_endo_{params[j]}_NEW.npy')
     
     type_hf_d = ['gomez'] #'control', 
-    params_d = ['ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 'ntm'] # 'ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 
+    params_d = ['ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 'ntm'] # 'ku', 'kuw', 'kws',
 
 
     for i in range(len(type_hf_d)):
