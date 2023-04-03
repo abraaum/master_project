@@ -15,7 +15,7 @@ from drug_values import drug_dict
 from population_func import apd_values, catd_values, tad_values, state_biomarkers, monitored_biomarkers , extra_biomarkers_drug
 
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
-pop_size = 10
+pop_size = 1000
 
 def df_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
     """Run the population model with different drugs.
@@ -108,12 +108,15 @@ def df_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
 
         #mssing
         # CaTA, EAD, repol_fail, qNet, DevF
-        CaTA = abs(diast_Ca, syst_Ca)
-        DevF = abs(Ta_min, Ta_max)
+        CaTA = abs(diast_Ca-syst_Ca)
+        DevF = abs(Ta_min-Ta_max)
         EAD, pos_calc, repol_fail, qNet = extra_biomarkers_drug(monitor, y)
 
         biomarkers.append(
             {
+                'mech_type': mech_type,
+                'hf_type': hf_type,
+                'drug_type': drug_type,
                 'APD_30': APD_30,
                 'APD_40': APD_40,
                 'APD_50': APD_50,
@@ -144,16 +147,24 @@ def df_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
             }
         )
 
-        df_biomarkers = pd.DataFrame(biomarkers)
+    df_biomarkers = pd.DataFrame(biomarkers)
 
-        df_biomarkers.to_csv('tester.csv')
-
-
-        
-
+    df_biomarkers.to_csv(f'drug/df_drug_{drug_type}_{mech_type}_{hf_type}.csv')
 
 
     
 
 if __name__ == '__main__':
-    df_pop_drug('iso', 'control', 'verapamil')
+    drug = sys.argv[1]
+    mech = ['iso', 'dyn']
+    hf = ['control', 'gomez'] 
+
+    proc = []
+    for m in mech:
+        for h in hf:
+            p = Process(target=df_pop_drug, args=(m, h, drug))
+            p.start()
+            proc.append(p)
+    for p in proc:
+        p.join()
+    

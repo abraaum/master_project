@@ -99,7 +99,7 @@ def extra_biomarkers_drug(monitor, y):
         pos_calc = True
     else: 
         pos_calc = False
-    if V[-1] > min(V): #or > -40 AGATHE: PICK VALUE (-50)
+    if V[-1] > -50: #or > -40 AGATHE: PICK VALUE (-50)
         repol_fail = True
     else:
         repol_fail = False 
