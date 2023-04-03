@@ -46,7 +46,7 @@ def df_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
             rs_rate=rand_val[i][7],
             rw_rate=rand_val[i][8],
             Tref_rate=rand_val[i][9],
-            cat50ref_rate=rand_val[i][10],
+            cat50ref_rate=(rand_val[i][10])*0.7 if hf_type=='gomez' else rand_val[i][10],
             ntm_rate=rand_val[i][11],
             #HF parameters
             GNaL_rate=1.80 if hf_type=='gomez' else 1,
