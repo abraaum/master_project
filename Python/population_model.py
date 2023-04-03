@@ -37,7 +37,7 @@ def make_population(hf_type, cell_type, mech_type, part):
     for i in range(part_dict[part][0], part_dict[part][1]):
         print(i)
         y0 = np.load(
-            f"init_values/coupled/{hf_type}_{cell_type}_coupled_{mech_type}_100_NEW.npy"
+            f"init_values/coupled/{hf_type}_{cell_type}_coupled_{mech_type}_100.npy"
         )
         parameters = model.init_parameter_values(
             celltype=0 if cell_type == "endo" else 1 if cell_type == "epi" else 2,
@@ -78,7 +78,7 @@ def make_population(hf_type, cell_type, mech_type, part):
 
         population.append(y0)
 
-    np.save(f'init_pop/population_{mech_type}_{hf_type}_{part}_NEW.npy', population, allow_pickle=True) 
+    np.save(f'init_pop/population_{mech_type}_{hf_type}_{part}.npy', population, allow_pickle=True) 
     
 
 def clean_population(hf_type='control', cell_type='endo', mech_type='iso'):

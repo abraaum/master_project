@@ -32,7 +32,7 @@ def isometric_sensitivity(hf_type, cell_type, mech_param, out=None):
         Vs, Cais, Tas, CaTrpns = [], [], [], []
         for i in range(len(inc)):
             y0 = np.load(
-                f"init_values/coupled/{hf_type}_{cell_type}_coupled_iso_{lamfile[l]}_NEW.npy"
+                f"init_values/coupled/{hf_type}_{cell_type}_coupled_iso_{lamfile[l]}.npy"
             )
             #cat50ref new implementation (Mora/Land)
             cat = 1
@@ -125,7 +125,7 @@ def dynamic_sensitivity(hf_type, cell_type, mech_param, out=None):
         Vs, Cais, Tas, CaTrpns, lmbdas = [], [], [], [], []
         for i in range(len(inc)):
             y0 = np.load(
-                f"init_values/coupled/{hf_type}_{cell_type}_coupled_dyn_{lamfile_dyn[l]}_NEW.npy"
+                f"init_values/coupled/{hf_type}_{cell_type}_coupled_dyn_{lamfile_dyn[l]}.npy"
             )
             #cat50ref new implementation (Mora/Land)
             cat = 1
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     #            hf_type=type_hf[i], 
     #            cell_type='endo', 
     #            mech_param=params[j], 
-    #            out=f'sens_iso_{type_hf[i]}_endo_{params[j]}_NEW.npy')
+    #            out=f'sens_iso_{type_hf[i]}_endo_{params[j]}.npy')
     
     type_hf_d = ['gomez'] #'control', 
     params_d = ['ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 'ntm'] # 'ku', 'kuw', 'kws',
@@ -238,7 +238,7 @@ if __name__ == "__main__":
                 hf_type=type_hf_d[i], 
                 cell_type='endo', 
                 mech_param=params_d[j], 
-                out=f'sens_dyn_{type_hf_d[i]}_endo_{params_d[j]}_NEW.npy')
+                out=f'sens_dyn_{type_hf_d[i]}_endo_{params_d[j]}.npy')
 
 
     #V, Cai, Ta, CaTrpn = load_sensitivity_values("test.npy")

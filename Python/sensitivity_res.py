@@ -21,8 +21,8 @@ import pandas as pd
 inc = np.arange(0.8, 1.201, 0.05).round(decimals=2)  # real run 0.01
 num_beats = 100  # real run 100-1000
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
-lamval = [0.9, 0.95, 1, 1.05, 1.1]  
-lamfile = ["090", "095", "100", "105", "110"] #
+lamval = [1, 1.05, 1.1]  #0.9, 0.95,
+lamfile = ["100", "105", "110"] # "090", "095",
 
 
 def isometric_sensitivity_max(V, Cai, Ta, CaTrpn, time_2_max=False):
@@ -163,7 +163,7 @@ def plot_isometric_sensitivity(V, Cai, Ta, CaTrpn, hf_type, param, save_fig=Fals
     fig.legend(loc=7, ncol=1)
 
     if save_fig==True:
-        plt.savefig(f'plots/iso_mech_sens_{hf_type}_endo_{param}_max.png')
+        plt.savefig(f'plots/sensitivity/dyn_mech_sens_{hf_type}_endo_{param}_max.png')
     else:
         plt.show()
 
@@ -206,7 +206,7 @@ def plot_isometric_sensitivity(V, Cai, Ta, CaTrpn, hf_type, param, save_fig=Fals
     fig.legend(loc=7, ncol=1)
     
     if save_fig==True:
-        plt.savefig(f'plots/iso_mech_sens_{hf_type}_endo_{param}_t2p.png')
+        plt.savefig(f'plots/sensitivity/dyn_mech_sens_{hf_type}_endo_{param}_t2p.png')
     else:
         plt.show()
 
@@ -262,18 +262,19 @@ def plot_isometric_full(param, hf_type, mech_type):
 
 
 if __name__ == "__main__":
-    """
-    type_hf = ['control', 'gomez'] #, 
-    params = ['rs', 'rw', 'Tref', 'cat50ref', 'ntm'] #'ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas'
+    
+    type_hf = ['gomez'] #, 'control', 
+    params = ['ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 'ntm'] #
 
     for i in range(len(type_hf)):
         for j in range(len(params)):
-            V, Cai, Ta, CaTrpn = load_sensitivity_values(f'sens_iso_{type_hf[i]}_endo_{params[j]}.npy')
+            V, Cai, Ta, CaTrpn = load_sensitivity_values(f'sens_dyn_{type_hf[i]}_endo_{params[j]}.npy')
             plot_isometric_sensitivity(V=V, Cai=Cai, Ta=Ta, CaTrpn=CaTrpn, hf_type=type_hf[i], param=params[j], save_fig=True)
     
     """
-    type_hf = ['control'] #, 'control', 
-    params = ['cat50ref'] # , 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 'ntm'
+    type_hf = ['gomez'] #, 'control', 
+    params = ['cat50ref', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 'ntm'] # 
     for i in range(len(type_hf)):
         for j in range(len(params)):
             plot_isometric_full(param=params[j], hf_type=type_hf[i], mech_type='iso')
+    """

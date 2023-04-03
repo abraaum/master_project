@@ -5,7 +5,6 @@ import ORdmm_Land_em_coupling as model
 from scipy.integrate import odeint
 import numpy as np
 import matplotlib.pyplot as plt
-import tqdm
 import sys
 import os
 import itertools
@@ -15,7 +14,9 @@ from drug_values import drug_dict
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
 pop_size = 1000
 
-def plot_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
+tsteps_new = np.arange(0.0, 1000.0, 1)
+
+def save_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
     """Run the population model with different drugs.
     """
     # load random sampling values
@@ -28,7 +29,6 @@ def plot_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
     if mech_type == 'dyn':
         Lambdas = []
 
-    fig, ax = plt.subplots(2, 2, sharex=True, figsize=(14,8))
     for i in range(pop_size):
         print(i)
         y0 = y0s[i]
@@ -96,58 +96,92 @@ def plot_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
         Ta = monitor.T[model.monitor_indices("Ta")]
         CaTrpn = y.T[model.state_indices("CaTrpn")]
 
-        Vs.append(V)
-        Cais.append(Cai)
-        Tas.append(Ta)
-        CaTrpns.append(CaTrpn)
+        Vs.append(V[::50])
+        Cais.append(Cai[::50])
+        Tas.append(Ta[::50])
+        CaTrpns.append(CaTrpn[::50])
 
         if mech_type =='dyn':
             Lambda = y.T[model.state_indices("lmbda")]
-            Lambdas.append(Lambda)
-        
-        ax[0][0].plot(tsteps, V, linewidth=0.7, alpha=0.5, color='lightskyblue')
-        ax[0][1].plot(tsteps, Cai, linewidth=0.7, alpha=0.5, color='lightskyblue')
-        ax[1][0].plot(tsteps, Ta, linewidth=0.7, alpha=0.5, color='lightskyblue')
-        ax[1][1].plot(tsteps, CaTrpn if mech_type=='iso' else Lambda, linewidth=0.7, alpha=0.5, color='lightskyblue')
+            Lambdas.append(Lambda[::50])
+    
+    d = {
+        'V': Vs,
+        'Cai': Cais,
+        'Ta':Tas,
+        'CaTrpn': CaTrpns
+        }
+    
+    if mech_type =='dyn':
+        d = {
+        'V': Vs,
+        'Cai': Cais,
+        'Ta':Tas,
+        'Lambda': Lambdas
+        }
+    
+    np.save(f'drug/drug_res_{drug_type}_{mech_type}_{hf_type}.npy', d, allow_pickle=True)
 
-    ax[0][0].plot(tsteps, np.mean(Vs, axis=0), linewidth=1, alpha=1, color='tab:blue')
+
+def test_plot_drug():
+    all_values = np.load('tester_save_50th.npy', allow_pickle=True)
+
+    V = all_values.item().get("V")
+    Cai = all_values.item().get("Cai")
+    Ta = all_values.item().get("Ta")
+    CaTrpn = all_values.item().get("CaTrpn")
+
+    fig, ax = plt.subplots(2, 2, sharex=True, figsize=(14,8))
+
+    for i in range(10): # pop_size
+        ax[0][0].plot(tsteps[::50], V[i], linewidth=0.7, alpha=0.5, color='lightskyblue')
+        ax[0][1].plot(tsteps[::50], Cai[i], linewidth=0.7, alpha=0.5, color='lightskyblue')
+        ax[1][0].plot(tsteps[::50], Ta[i], linewidth=0.7, alpha=0.5, color='lightskyblue')
+        ax[1][1].plot(tsteps[::50], CaTrpn[i], linewidth=0.7, alpha=0.5, color='lightskyblue')
+    
+    ax[0][0].plot(tsteps[::50], np.mean(V, axis=0), linewidth=1, alpha=1, color='tab:blue')
     ax[0][0].set_title("Voltage")
     ax[0][0].set_ylabel("Voltage (mV)")
     ax[0][0].set_xlabel("Time (ms)")
     ax[0][0].grid(linewidth=0.3)
 
-    ax[0][1].plot(tsteps, np.mean(Cais, axis=0), linewidth=1, alpha=1, color='tab:blue')
+    ax[0][1].plot(tsteps[::50], np.mean(Cai, axis=0), linewidth=1, alpha=1, color='tab:blue')
     ax[0][1].set_title("Cai")
     ax[0][1].set_ylabel("Ca_i (mM)")
     ax[0][1].set_xlabel("Time (ms)")
     ax[0][1].grid(linewidth=0.3)
 
-    ax[1][0].plot(tsteps, np.mean(Tas, axis=0), linewidth=1, alpha=1, color='tab:blue')
+    ax[1][0].plot(tsteps[::50], np.mean(Ta, axis=0), linewidth=1, alpha=1, color='tab:blue')
     ax[1][0].set_title("Ta")
     ax[1][0].set_ylabel("Ta (kPa)")
     ax[1][0].set_xlabel("Time (ms)")
     ax[1][0].grid(linewidth=0.3)
 
-    ax[1][1].plot(tsteps, np.mean(CaTrpns, axis=0) if mech_type=='iso' else np.mean(Lambdas, axis=0), linewidth=1, alpha=1, color='tab:blue')
-    ax[1][1].set_title("CaTrpn" if mech_type=='iso' else "Lambda")
-    ax[1][1].set_ylabel("CaTrpn" if mech_type=='iso' else "Lambda")
+    ax[1][1].plot(tsteps[::50], np.mean(CaTrpn, axis=0), linewidth=1, alpha=1, color='tab:blue')
+    ax[1][1].set_title("CaTrpn")
+    ax[1][1].set_ylabel("CaTrpn")
     ax[1][1].set_xlabel("Time (ms)")
     ax[1][1].grid(linewidth=0.3)
 
-    fig.suptitle(f'{drug_type} ({mech_type}, {hf_type})')
     leg = plt.figlegend(labels=['population', 'mean'], loc=7)
     leg.legendHandles[0].set_color('lightskyblue')
     leg.legendHandles[1].set_color('tab:blue')
-    
-    plt.savefig(f'plots/pop_drug_{hf_type}_{mech_type}_{drug_type}.png')
+
+    plt.show()
 
 
-
-    
 
 if __name__ == '__main__':
-    
-    mech = sys.argv[1]
-    hf = sys.argv[2]
-    drug = sys.argv[3]
-    plot_pop_drug(mech_type=mech, hf_type=hf, drug_type=drug,)
+    mech = ['iso', 'dyn']
+    hf = ['control', 'gomez']
+    drug = sys.argv[1]
+    proc = []
+    for m in mech:
+        for h in hf:
+            p = Process(target=save_pop_drug, args=(m, h, drug))
+            p.start()
+            proc.append(p)
+    for p in proc:
+        p.join()
+
+    #test_plot_drug()

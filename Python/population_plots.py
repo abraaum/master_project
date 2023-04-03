@@ -70,7 +70,7 @@ def plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', o
             rs_rate=rand_val[i][7],
             rw_rate=rand_val[i][8],
             Tref_rate=rand_val[i][9],
-            cat50ref_rate=rand_val[i][10],
+            cat50ref_rate=(rand_val[i][10])*0.7 if hf_type=='gomez' else rand_val[i][10],
             ntm_rate=rand_val[i][11],
             #HF parameters
             GNaL_rate=1.80 if hf_type=='gomez' else 1,
@@ -138,7 +138,7 @@ def plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', o
 
 
     if out != None:
-        plt.savefig(f'plots/pop_diff_{hf_type}_{mech_type}_2.png')
+        plt.savefig(f'plots/pop_diff_{hf_type}_{mech_type}.png')
         plt.show()
     else:
         plt.show()
