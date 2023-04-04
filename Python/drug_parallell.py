@@ -21,7 +21,7 @@ def run_population_drug(mech_type, hf_type, part, drug_type, cell_type='endo'):
     # load random sampling values
     rand_val = np.load(f'init_pop/rand_sample_iso_control.npy')
     # load specific population
-    y0s = np.load(f'init_pop/population_{mech_type}_{hf_type}_NEW.npy') 
+    y0s = np.load(f'init_pop/population_{mech_type}_{hf_type}.npy') 
     # list for new population
     population_drug = []
 
@@ -95,21 +95,21 @@ def run_population_drug(mech_type, hf_type, part, drug_type, cell_type='endo'):
         
         population_drug.append(y0)
     
-    np.save(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_{part}_NEW.npy', population_drug, allow_pickle=True) 
+    np.save(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_{part}.npy', population_drug, allow_pickle=True) 
 
 
 def conc_del_pop(mech_type, hf_type, drug_type):
     # Merge together population again
-    arr1 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_1_NEW.npy')
-    arr2 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_2_NEW.npy')
-    arr3 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_3_NEW.npy')
-    arr4 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_4_NEW.npy')
-    arr5 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_5_NEW.npy')
-    arr6 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_6_NEW.npy')
-    arr7 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_7_NEW.npy')
-    arr8 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_8_NEW.npy')
-    arr9 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_9_NEW.npy')
-    arr10 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_10_NEW.npy')
+    arr1 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_1.npy')
+    arr2 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_2.npy')
+    arr3 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_3.npy')
+    arr4 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_4.npy')
+    arr5 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_5.npy')
+    arr6 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_6.npy')
+    arr7 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_7.npy')
+    arr8 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_8.npy')
+    arr9 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_9.npy')
+    arr10 = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_10.npy')
 
 
     full_arr = np.concatenate((arr1, arr2, arr3, arr4, arr5, arr6, arr7, arr8, arr9, arr10), axis=0)

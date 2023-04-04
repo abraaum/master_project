@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import tqdm
 import pandas as pd
+from matplotlib.lines import Line2D
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -41,116 +42,179 @@ def plot_population_dist(hf_type='control', mech_type='iso', out=None):
         plt.show()
 
 
-def plot_population_diff(hf_type='control', cell_type='endo', mech_type='iso', out=None):
+
+def plot_pop_accepted(hf_type='control', mech_type='iso', out=None):
     """Plot difference in accepted and rejected cells in population."""
     # load random sampling values
     rand_val = np.load(f'init_pop/rand_sample_iso_control.npy') 
     # load population
-    y0s = np.load(f'init_pop/population_{mech_type}_{hf_type}.npy') 
+    all_values = np.load(f'init_pop/pop_res_{mech_type}_{hf_type}.npy', allow_pickle=True) 
     # find difference of populations
     removed_rand_index = np.load(f'init_pop/population_iso_control_remove.npy', allow_pickle=True) 
 
+    V = all_values.item().get("V")
+    Cai = all_values.item().get("Cai")
+    Ta = all_values.item().get("Ta")
+
+    if mech_type=='iso':
+        CaTrpn = all_values.item().get("CaTrpn")
+    else:
+        Lambda = all_values.item().get("Lambda")
+
     fig, ax = plt.subplots(2, 2, sharex=True, figsize=(14,8))
 
+
     for i in range(pop_size):
-        y0 = y0s[i]
-
-        parameters = model.init_parameter_values(
-            celltype=0 if cell_type == "endo" else 1 if cell_type == "epi" else 2,
-            isometric=1 if mech_type=='iso' else 0,
-            lmbda_set=1,
-            #mechanical parameters
-            ku_rate=rand_val[i][0],
-            kuw_rate=rand_val[i][1],
-            kws_rate=rand_val[i][2],
-            ktrpn_rate=rand_val[i][3],
-            Trpn50_rate=rand_val[i][4],
-            gammaw_rate=rand_val[i][5],
-            gammas_rate=rand_val[i][6],
-            rs_rate=rand_val[i][7],
-            rw_rate=rand_val[i][8],
-            Tref_rate=rand_val[i][9],
-            cat50ref_rate=(rand_val[i][10])*0.7 if hf_type=='gomez' else rand_val[i][10],
-            ntm_rate=rand_val[i][11],
-            #HF parameters
-            GNaL_rate=1.80 if hf_type=='gomez' else 1,
-            Gto_rate=0.40 if hf_type=='gomez' else 1,
-            GK1_rate=0.68 if hf_type=='gomez' else 1,
-            Gncx_rate=1.750 if hf_type=='gomez' else 1,
-            Jleak_rate=1.30 if hf_type=='gomez' else 1,
-            Jserca_rate=0.5 if hf_type=='gomez' else 1,
-            CaMKa_rate=1.50 if hf_type=='gomez' else 1,
-            Pnak_rate=0.70 if hf_type=='gomez' else 1,
-            Pnab_rate=1,
-            Pcab_rate=1,
-            thl_rate=1.80 if hf_type=='gomez' else 1,
-            Jrel_inf_sensitivity=0.80 if hf_type=='gomez' else 1,
-            Jrel_infp_sensitivity=0.80 if hf_type=='gomez' else 1,
-        )
-
-        y = odeint(model.rhs, y0, tsteps, args=(parameters,))
-        monitor = np.array(
-                [model.monitor(r, t, parameters) for r, t in zip(y, tsteps)]
-            )
-        
-        V = y.T[model.state_indices("v")]
-        Cai = y.T[model.state_indices("cai")]
-        Ta = monitor.T[model.monitor_indices("Ta")]
-        CaTrpn = y.T[model.state_indices("CaTrpn")]
 
         if i in removed_rand_index:
-            alpha = 0.5 #0.5
-            col = 'lightskyblue' 
+            alpha = 0.3 #0.5
+            col = 'lightskyblue' if hf_type=='control' else 'lightcoral'
             z = 1
         else:
             alpha = 1
-            col = 'tab:blue'
+            col = 'tab:blue' if hf_type=='control' else 'tab:red'
             z = 2
-        print(i)
         
-        ax[0][0].plot(tsteps, V, linewidth=0.7, alpha=alpha, color=col, zorder=z)
-        ax[0][0].set_title("Voltage")
-        ax[0][0].set_ylabel("Voltage (mV)")
-        ax[0][0].set_xlabel("Time (ms)")
-        ax[0][0].grid(linewidth=0.3)
+        ax[0][0].plot(tsteps[::50], V[i], linewidth=0.7, alpha=alpha, color=col, zorder=z)
+        ax[0][1].plot(tsteps[::50], Cai[i], linewidth=0.7, alpha=alpha, color=col, zorder=z)
+        ax[1][0].plot(tsteps[::50], Ta[i], linewidth=0.7, alpha=alpha, color=col, zorder=z)
+        ax[1][1].plot(tsteps[::50], CaTrpn[i] if mech_type=='iso' else Lambda[i], linewidth=0.7, alpha=alpha, color=col, zorder=z)
+        
+    ax[0][0].set_title("Voltage")
+    ax[0][0].set_ylabel("Voltage (mV)")
+    ax[0][0].set_xlabel("Time (ms)")
+    ax[0][0].grid(linewidth=0.3)
 
-        ax[0][1].plot(tsteps, Cai, linewidth=0.7, alpha=alpha, color=col, zorder=z)
-        ax[0][1].set_title("Cai")
-        ax[0][1].set_ylabel("Ca_i (mM)")
-        ax[0][1].set_xlabel("Time (ms)")
-        ax[0][1].grid(linewidth=0.3)
+    ax[0][1].set_title("Cai")
+    ax[0][1].set_ylabel("Ca_i (mM)")
+    ax[0][1].set_xlabel("Time (ms)")
+    ax[0][1].grid(linewidth=0.3)
 
-        ax[1][0].plot(tsteps, Ta, linewidth=0.7, alpha=alpha, color=col, zorder=z)
-        ax[1][0].set_title("Ta")
-        ax[1][0].set_ylabel("Ta (kPa)")
-        ax[1][0].set_xlabel("Time (ms)")
-        ax[1][0].grid(linewidth=0.3)
+    ax[1][0].set_title("Ta")
+    ax[1][0].set_ylabel("Ta (kPa)")
+    ax[1][0].set_xlabel("Time (ms)")
+    ax[1][0].grid(linewidth=0.3)
 
-        ax[1][1].plot(tsteps, CaTrpn, linewidth=0.7, alpha=alpha, color=col, zorder=z)
-        ax[1][1].set_title("CaTrpn")
-        ax[1][1].set_ylabel("CaTrpn")
-        ax[1][1].set_xlabel("Time (ms)")
-        ax[1][1].grid(linewidth=0.3)
+    ax[1][1].set_title("CaTrpn" if mech_type=='iso' else "Lambda")
+    ax[1][1].set_ylabel("CaTrpn" if mech_type=='iso' else "Lambda")
+    ax[1][1].set_xlabel("Time (ms)")
+    ax[1][1].grid(linewidth=0.3)
 
-    leg = plt.figlegend(title='Population', labels=['rejected', 'accepted'], loc=7)
-    leg.legendHandles[0].set_color('lightskyblue')
-    leg.legendHandles[1].set_color('blue')
-
+    if hf_type=='control':
+        custom_lines = [Line2D([0], [0], color='lightskyblue', ls='-'),
+                        Line2D([0], [0], color='tab:blue', ls='-')]
+    else:
+        custom_lines = [Line2D([0], [0], color='lightcoral', ls='-'),
+                        Line2D([0], [0], color='tab:red', ls='-')]
+    
+    plt.figlegend(custom_lines, ['rejected', 'accepted'], loc=7)
+    fig.suptitle(f'Population of models ({mech_type}, {hf_type})', fontsize='x-large')
 
     if out != None:
-        plt.savefig(f'plots/pop_diff_{hf_type}_{mech_type}.png')
+        plt.savefig(f'plots/pop_acc_{hf_type}_{mech_type}.png')
         plt.show()
     else:
         plt.show()
 
 
+def plot_pop_diff_HF_C(mech_type='iso', drug_type=None, out=None):
+
+    if drug_type==None:
+        control_values = np.load(f'init_pop/pop_res_{mech_type}_control.npy', allow_pickle=True) 
+        hf_values = np.load(f'init_pop/pop_res_{mech_type}_gomez.npy', allow_pickle=True) 
+    else:
+        control_values = np.load(f'drug/drug_res_{drug_type}_{mech_type}_control.npy', allow_pickle=True) 
+        hf_values = np.load(f'drug/drug_res_{drug_type}_{mech_type}_gomez.npy', allow_pickle=True) 
+    
+    V_hf = hf_values.item().get("V")
+    Cai_hf = hf_values.item().get("Cai")
+    Ta_hf = hf_values.item().get("Ta")
+
+    V_control = control_values.item().get("V")
+    Cai_control = control_values.item().get("Cai")
+    Ta_control = control_values.item().get("Ta")
+
+    if mech_type=='iso':
+        CaTrpn_hf = hf_values.item().get("CaTrpn")
+        CaTrpn_control = control_values.item().get("CaTrpn")
+    else:
+        Lambda_hf = hf_values.item().get("Lambda")
+        Lambda_control = control_values.item().get("Lambda")
+
+    fig, ax = plt.subplots(2, 2, sharex=True, figsize=(14,8))
+
+    for i in range(pop_size): # pop_size
+        ax[0][0].plot(tsteps[::50], V_control[i], linewidth=0.5, alpha=0.1, color='tab:blue', zorder=1)
+        ax[0][1].plot(tsteps[::50], Cai_control[i], linewidth=0.5, alpha=0.1, color='tab:blue', zorder=1)
+        ax[1][0].plot(tsteps[::50], Ta_control[i], linewidth=0.5, alpha=0.1, color='tab:blue', zorder=1)
+        ax[1][1].plot(tsteps[::50], CaTrpn_control[i] if mech_type=='iso' else Lambda_control[i], linewidth=0.5, alpha=0.1, color='tab:blue', zorder=1)
+
+    for i in range(pop_size): # pop_size
+        ax[0][0].plot(tsteps[::50], V_hf[i], linewidth=0.5, alpha=0.1, color='tab:red', zorder=1)
+        ax[0][1].plot(tsteps[::50], Cai_hf[i], linewidth=0.5, alpha=0.1, color='tab:red', zorder=1)
+        ax[1][0].plot(tsteps[::50], Ta_hf[i], linewidth=0.5, alpha=0.1, color='tab:red', zorder=1)
+        ax[1][1].plot(tsteps[::50], CaTrpn_hf[i] if mech_type=='iso' else Lambda_hf[i], linewidth=0.5, alpha=0.1, color='tab:red', zorder=1)
+    
+
+    ax[0][0].plot(tsteps[::50], np.mean(V_control, axis=0), linewidth=1, alpha=1, color='b', zorder=2)
+    ax[0][0].plot(tsteps[::50], np.mean(V_hf, axis=0), linewidth=1, alpha=1, color='r', zorder=2)
+    ax[0][0].set_title("Voltage")
+    ax[0][0].set_ylabel("Voltage (mV)")
+    ax[0][0].set_xlabel("Time (ms)")
+    ax[0][0].grid(linewidth=0.3)
+
+    ax[0][1].plot(tsteps[::50], np.mean(Cai_control, axis=0), linewidth=1, alpha=1, color='b', zorder=2)
+    ax[0][1].plot(tsteps[::50], np.mean(Cai_hf, axis=0), linewidth=1, alpha=1, color='r', zorder=2)
+    ax[0][1].set_title("Cai")
+    ax[0][1].set_ylabel("Ca_i (mM)")
+    ax[0][1].set_xlabel("Time (ms)")
+    ax[0][1].grid(linewidth=0.3)
+
+    ax[1][0].plot(tsteps[::50], np.mean(Ta_control, axis=0), linewidth=1, alpha=1, color='b', zorder=2)
+    ax[1][0].plot(tsteps[::50], np.mean(Ta_hf, axis=0), linewidth=1, alpha=1, color='r', zorder=2)
+    ax[1][0].set_title("Ta")
+    ax[1][0].set_ylabel("Ta (kPa)")
+    ax[1][0].set_xlabel("Time (ms)")
+    ax[1][0].grid(linewidth=0.3)
+
+    ax[1][1].plot(tsteps[::50], np.mean(CaTrpn_control, axis=0) if mech_type=='iso' else np.mean(Lambda_control, axis=0), linewidth=1, alpha=1, color='b', zorder=2)
+    ax[1][1].plot(tsteps[::50], np.mean(CaTrpn_hf, axis=0) if mech_type=='iso' else np.mean(Lambda_hf, axis=0), linewidth=1, alpha=1, color='r', zorder=2)
+    ax[1][1].set_title("CaTrpn" if mech_type=='iso' else "Lambda")
+    ax[1][1].set_ylabel("CaTrpn" if mech_type=='iso' else "Lambda")
+    ax[1][1].set_xlabel("Time (ms)")
+    ax[1][1].grid(linewidth=0.3)
+
+    custom_lines = [Line2D([0], [0], color='tab:blue', ls='-'),
+                    Line2D([0], [0], color='tab:red', ls='-')]
+
+    plt.figlegend(custom_lines, ['control', 'HF'], loc=7)
+    if drug_type==None:
+        fig.suptitle(f'Population of {mech_type} models', fontsize='x-large')
+    else:
+        fig.suptitle(f'Population of {mech_type} models ({drug_type})', fontsize='x-large')
+
+    if out != None:
+        if drug_type==None:
+            plt.savefig(f'plots/pop_diff_hf_c_{mech_type}.png')
+        else:
+            plt.savefig(f'plots/drug_trial/pop_diff_hf_c_{mech_type}_{drug_type}.png')
+    else:
+        plt.show()
+
+
+
 
 if __name__ == "__main__":
 
-    #plot_population_dist(hf_type='control', mech_type='iso',out=None)
-    #plot_population_diff(hf_type='control', cell_type='endo', mech_type='dyn', out=True)
-    #plot_population_diff(hf_type='gomez', cell_type='endo', mech_type='dyn', out=True)
-    plot_population_diff(hf_type='gomez', cell_type='endo', mech_type='iso', out=True)
+    #plot_population_dist(hf_type='control', mech_type='iso',out=True)
+
+    #plot_pop_accepted(hf_type='control', mech_type='iso', out=True)
+    #plot_pop_accepted(hf_type='control', mech_type='dyn', out=True)
+    #plot_pop_accepted(hf_type='gomez', mech_type='dyn', out=True)
+    #plot_pop_accepted(hf_type='gomez', mech_type='iso', out=True)
+
+    plot_pop_diff_HF_C(mech_type='iso', out=True)
+    plot_pop_diff_HF_C(mech_type='dyn', out=True)
 
 
 

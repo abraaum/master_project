@@ -16,7 +16,7 @@ tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
 pop_size = 1000
 
 
-def save_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
+def save_pop_drug_traces(mech_type, hf_type, drug_type, cell_type='endo'):
     """Run the population model with different drugs.
     """
     # load random sampling values
@@ -208,7 +208,7 @@ def save_pop_traces(mech_type, hf_type, cell_type='endo'):
     np.save(f'init_pop/pop_res_{mech_type}_{hf_type}.npy', d, allow_pickle=True)
 
 
-def test_plot_drug(mech_type, hf_type, drug_type, out=None):
+def plot_drug(mech_type, hf_type, drug_type, out=None):
     all_values = np.load(f'drug/drug_res_{drug_type}_{mech_type}_{hf_type}.npy', allow_pickle=True)
     control_values = np.load(f'init_pop/res_{mech_type}_control.npy', allow_pickle=True)
 
@@ -229,34 +229,41 @@ def test_plot_drug(mech_type, hf_type, drug_type, out=None):
 
     fig, ax = plt.subplots(2, 2, sharex=True, figsize=(14,8))
 
+    if hf_type=='control':
+        c_line = 'lightskyblue'
+        c = 'tab:blue'
+    else:
+        c_line = 'lightcoral'
+        c = 'tab:red'
+
     for i in range(pop_size): # pop_size
-        ax[0][0].plot(tsteps[::50], V[i], linewidth=0.5, alpha=0.5, color='lightskyblue', zorder=1)
-        ax[0][1].plot(tsteps[::50], Cai[i], linewidth=0.5, alpha=0.5, color='lightskyblue', zorder=1)
-        ax[1][0].plot(tsteps[::50], Ta[i], linewidth=0.5, alpha=0.5, color='lightskyblue', zorder=1)
-        ax[1][1].plot(tsteps[::50], CaTrpn[i] if mech_type=='iso' else Lambda[i], linewidth=0.7, alpha=0.5, color='lightskyblue', zorder=1)
+        ax[0][0].plot(tsteps[::50], V[i], linewidth=0.5, alpha=0.5, color=c_line, zorder=1)
+        ax[0][1].plot(tsteps[::50], Cai[i], linewidth=0.5, alpha=0.5, color=c_line, zorder=1)
+        ax[1][0].plot(tsteps[::50], Ta[i], linewidth=0.5, alpha=0.5, color=c_line, zorder=1)
+        ax[1][1].plot(tsteps[::50], CaTrpn[i] if mech_type=='iso' else Lambda[i], linewidth=0.5, alpha=0.5, color=c_line, zorder=1)
     
-    ax[0][0].plot(tsteps[::50], np.mean(V, axis=0), linewidth=1, alpha=1, color='tab:blue', zorder=3)
+    ax[0][0].plot(tsteps[::50], np.mean(V, axis=0), linewidth=1, alpha=1, color=c, zorder=3)
     ax[0][0].plot(tsteps[::50], V_control, linewidth=1, alpha=1, color='k', ls='--', zorder=3)
     ax[0][0].set_title("Voltage")
     ax[0][0].set_ylabel("Voltage (mV)")
     ax[0][0].set_xlabel("Time (ms)")
     ax[0][0].grid(linewidth=0.3)
 
-    ax[0][1].plot(tsteps[::50], np.mean(Cai, axis=0), linewidth=1, alpha=1, color='tab:blue', zorder=3)
+    ax[0][1].plot(tsteps[::50], np.mean(Cai, axis=0), linewidth=1, alpha=1, color=c, zorder=3)
     ax[0][1].plot(tsteps[::50], Cai_control, linewidth=1, alpha=1, color='k', ls='--', zorder=3)
     ax[0][1].set_title("Cai")
     ax[0][1].set_ylabel("Ca_i (mM)")
     ax[0][1].set_xlabel("Time (ms)")
     ax[0][1].grid(linewidth=0.3)
 
-    ax[1][0].plot(tsteps[::50], np.mean(Ta, axis=0), linewidth=1, alpha=1, color='tab:blue', zorder=3)
+    ax[1][0].plot(tsteps[::50], np.mean(Ta, axis=0), linewidth=1, alpha=1, color=c, zorder=3)
     ax[1][0].plot(tsteps[::50], Ta_control, linewidth=1, alpha=1, color='k', ls='--', zorder=3)
     ax[1][0].set_title("Ta")
     ax[1][0].set_ylabel("Ta (kPa)")
     ax[1][0].set_xlabel("Time (ms)")
     ax[1][0].grid(linewidth=0.3)
 
-    ax[1][1].plot(tsteps[::50], np.mean(CaTrpn, axis=0) if mech_type=='iso' else np.mean(Lambda, axis=0), linewidth=1, alpha=1, color='tab:blue', zorder=3)
+    ax[1][1].plot(tsteps[::50], np.mean(CaTrpn, axis=0) if mech_type=='iso' else np.mean(Lambda, axis=0), linewidth=1, alpha=1, color=c, zorder=3)
     ax[1][1].plot(tsteps[::50], CaTrpn_control if mech_type=='iso' else Lambda_control, linewidth=1, alpha=1, color='k', ls='--', zorder=3)
     ax[1][1].set_title("CaTrpn" if mech_type=='iso' else "Lambda")
     ax[1][1].set_ylabel("CaTrpn" if mech_type=='iso' else "Lambda")
@@ -279,23 +286,23 @@ def test_plot_drug(mech_type, hf_type, drug_type, out=None):
         tsteps[::50], 
         np.mean(Ta, axis=0)-np.std(Ta, axis=0), 
         np.mean(Ta, axis=0)+np.std(Ta, axis=0), 
-        color='tab:blue', alpha=0.3, zorder=2)
+        color=c, alpha=0.3, zorder=2)
     
     ax[0][1].fill_between(
         tsteps[::50], 
         np.mean(Cai, axis=0)-np.std(Cai, axis=0), 
         np.mean(Cai, axis=0)+np.std(Cai, axis=0), 
-        color='tab:blue', alpha=0.3, zorder=2)
+        color=c, alpha=0.3, zorder=2)
     
     ax[1][1].fill_between(
         tsteps[::50], 
         (np.mean(CaTrpn, axis=0)-np.std(CaTrpn, axis=0)) if mech_type=='iso' else (np.mean(Lambda, axis=0)-np.std(Lambda, axis=0)), 
         (np.mean(CaTrpn, axis=0)+np.std(CaTrpn, axis=0)) if mech_type=='iso' else (np.mean(Lambda, axis=0)+np.std(Lambda, axis=0)), 
-        color='tab:blue', alpha=0.3, zorder=2)
+        color=c, alpha=0.3, zorder=2)
 
 
-    custom_lines = [Line2D([0], [0], color='lightskyblue', ls='-'),
-                    Line2D([0], [0], color='tab:blue', ls='-'),
+    custom_lines = [Line2D([0], [0], color=c_line, ls='-'),
+                    Line2D([0], [0], color=c, ls='-'),
                     Line2D([0], [0], color='k',  ls='--')]
 
     plt.figlegend(custom_lines, ['population', 'mean', 'control'], loc=7)
@@ -346,14 +353,14 @@ def drug_control_save(mech_type, hf_type, cell_type='endo'):
 
 
 if __name__ == '__main__':
-    
+    """
     mech = ['iso', 'dyn']
     hf = ['control', 'gomez']
-    #drug = sys.argv[1]
+    drug = sys.argv[1]
     proc = []
     for m in mech:
         for h in hf:
-            p = Process(target=save_pop_traces, args=(m, h)) #target=save_pop_drug, args=(m, h, drug)
+            p = Process(target=save_pop_drug_traces, args=(m, h, drug)) #
             p.start()
             proc.append(p)
     for p in proc:
@@ -361,7 +368,7 @@ if __name__ == '__main__':
     
     """ 
     mech = ['iso', 'dyn']
-    hf = ['control', 'gomez']
+    hf = ['gomez'] #'control', 
     drug = [
         'dofetilide', 'verapamil', 'quinidine','bepridil','sotalol', 'azimilide','ibutilide',
         'vandetanib', 'disopyramide', 'chlorpromazine', 'cisapride', 'ondansetron', 'terfenadine',
@@ -373,5 +380,5 @@ if __name__ == '__main__':
     for m in mech:
         for h in hf:
             for d in drug:
-                test_plot_drug(mech_type=m, hf_type=h, drug_type=d, out=True)
-    """
+                plot_drug(mech_type=m, hf_type=h, drug_type=d, out=True)
+    
