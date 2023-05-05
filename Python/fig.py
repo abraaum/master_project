@@ -12,11 +12,12 @@ import old.new_model as model_iso
 
 
 t = np.arange(0.0, 1000.0, 0.1)
-num_beats = 10
+num_beats = 20
 
 
-SLvals = np.linspace(1.8,2.3,6)
-lmbdavals = SLvals/1.85
+#SLvals = np.linspace(1.8,2.3,6)
+#lmbdavals = SLvals/1.85
+lmbdavals = [1]
 #[0.97297297 1.02702703 ! 1.08108108 1.13513514 1.18918919 1.24324324]
 #lmbdavals = [1.08108108, 1.13513514, 1.18918919, 1.24324324]
 force_ind = model.monitor_indices("Ta")     
@@ -93,12 +94,13 @@ def run_lam_plots(lmbda=1.18918919, lambda_set=True):
     plt.show()
 
 def compare_isometric():
+    plt.figure(figsize=(10,6))
     for l in lmbdavals:
         force_dyn1 = []
         force_dyn2 = []
         force_stat = []
         p_dyn1 = model.init_parameter_values(
-            lmbda_set=l,Kse=1e6
+            lmbda_set=l, isometric=0#Kse=1e6
             )
         p_dyn2 = model.init_parameter_values(
             lmbda_set=l,isometric=1
@@ -118,18 +120,21 @@ def compare_isometric():
 
             s_stat = odeint(model_iso.rhs, init_stat, t, (p_stat,))
             init_stat = s_stat[-1] 
-        for tn,sn in zip(t,s_dyn1):
-            m = model.monitor(sn, tn, p_dyn1)
-            force_dyn1.append(m[force_ind])
-        pylab.plot(t, force_dyn1, '*', label=f'Dynamic1, $\lambda$={l:3.2f}')
-        for tn,sn in zip(t,s_dyn2):
-            m = model.monitor(sn, tn, p_dyn2)
-            force_dyn2.append(m[force_ind])
-        pylab.plot(t, force_dyn2, label=f'Dynamic2, $\lambda$={l:3.2f}')
+        
         for tn,sn in zip(t,s_stat):
             m = model_iso.monitor(sn, tn, p_stat)
             force_stat.append(m[force_ind])
-        pylab.plot(t, force_stat,':', label=f'Static, $\lambda$={l:3.2f}')
+        pylab.plot(t, force_stat,'-', linewidth=5, label=f'ORd_Land') #$\lambda$={l:3.2f}
+        for tn,sn in zip(t,s_dyn2):
+            m = model.monitor(sn, tn, p_dyn2)
+            force_dyn2.append(m[force_ind])
+        pylab.plot(t, force_dyn2,'-', label=f'Modified ORd-Land (isometric)')#$\lambda$={l:3.2f}'
+        for tn,sn in zip(t,s_dyn1):
+            m = model.monitor(sn, tn, p_dyn1)
+            force_dyn1.append(m[force_ind])
+        pylab.plot(t, force_dyn1, '-', label=f'Modified ORd-Land (dynamic)') #$\lambda$={l:3.2f}
+        
+    plt.title(f'Active tension in models with $\lambda$=1')   
     pylab.legend()
     pylab.show()
 

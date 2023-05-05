@@ -1,3 +1,7 @@
+"""
+Actual file for plotting population drug.
+"""
+
 from multiprocessing import Process
 import time
 
@@ -367,18 +371,18 @@ if __name__ == '__main__':
         p.join()
     
     """ 
-    mech = ['iso', 'dyn']
+    mech = ['iso'] #, 'dyn'
     hf = ['gomez'] #'control', 
     drug = [
-        'dofetilide', 'verapamil', 'quinidine','bepridil','sotalol', 'azimilide','ibutilide',
-        'vandetanib', 'disopyramide', 'chlorpromazine', 'cisapride', 'ondansetron', 'terfenadine',
-        'diltiazem', 'mexiletine', 'ranolazine', 'astemizole', 'clozapine', 'domperidone', 'droperidol', 
-        'pimozide', 'risperidone', 'loratadine', 'metoprolol', 'nifedipine', 'nitrendipine', 'tamoxifen',
-        'clarithromycin'
+        'dofetilide', #'verapamil', 'quinidine','bepridil','sotalol', 'azimilide','ibutilide',
+        #'vandetanib', 'disopyramide', 'chlorpromazine', 'cisapride', 'ondansetron', 'terfenadine',
+        #'diltiazem', 'mexiletine', 'ranolazine', 'astemizole', 'clozapine', 'domperidone', 'droperidol', 
+        #'pimozide', 'risperidone', 'loratadine', 'metoprolol', 'nifedipine', 'nitrendipine', 'tamoxifen',
+        #'clarithromycin'
         ]
     
     for m in mech:
         for h in hf:
             for d in drug:
-                plot_drug(mech_type=m, hf_type=h, drug_type=d, out=True)
+                plot_drug(mech_type=m, hf_type=h, drug_type=d, out=None)
     

@@ -212,7 +212,7 @@ def plot_isometric_sensitivity(V, Cai, Ta, CaTrpn, hf_type, param, save_fig=Fals
 
         
 
-def plot_isometric_full(param, hf_type, mech_type):
+def plot_isometric_full(param, hf_type, mech_type, save_fig=False):
     Vs, Cais, Tas, CaTrpns = load_sensitivity_values(f'sens_{mech_type}_{hf_type}_endo_{param}.npy')
     fig, ax = plt.subplots(2, 2, sharex=True, figsize=(14,8))
     col_list = ['b', 'g', 'm', 'c', 'r'] 
@@ -245,36 +245,39 @@ def plot_isometric_full(param, hf_type, mech_type):
 
             ax[1][0].plot(tsteps, Ta, linewidth=0.7 if inc[i]==1 else 0.3, color=col_list[l])
             ax[1][0].set_title("Ta")
-            ax[1][0].set_ylabel("Ta ()")
+            ax[1][0].set_ylabel("Ta (kPa)")
             ax[1][0].set_xlabel("Time (ms)")
             ax[1][0].grid(linewidth=0.3)
 
             ax[1][1].plot(tsteps, CaTrpn, linewidth=0.7 if inc[i]==1 else 0.3, color=col_list[l])
             ax[1][1].set_title("CaTrpn")
-            ax[1][1].set_ylabel("CaTrpn ()")
+            ax[1][1].set_ylabel("CaTrpn")
             ax[1][1].set_xlabel("Time (ms)")
             ax[1][1].grid(linewidth=0.3)        
 
 
     fig.legend(loc=7, ncol=1)
-    plt.show()
+    if save_fig==True:
+        plt.savefig(f'plots/sensitivity/sens_full_{mech_type}_{hf_type}_{param}.png')
+    else:
+        plt.show()
 
 
 
 if __name__ == "__main__":
     
-    type_hf = ['gomez'] #, 'control', 
+    type_hf = ['control'] #, 'control', 
     params = ['ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 'ntm'] #
-
+    """
     for i in range(len(type_hf)):
         for j in range(len(params)):
-            V, Cai, Ta, CaTrpn = load_sensitivity_values(f'sens_dyn_{type_hf[i]}_endo_{params[j]}.npy')
-            plot_isometric_sensitivity(V=V, Cai=Cai, Ta=Ta, CaTrpn=CaTrpn, hf_type=type_hf[i], param=params[j], save_fig=True)
+            V, Cai, Ta, CaTrpn = load_sensitivity_values(f'sens_iso_{type_hf[i]}_endo_{params[j]}.npy')
+            plot_isometric_sensitivity(V=V, Cai=Cai, Ta=Ta, CaTrpn=CaTrpn, hf_type=type_hf[i], param=params[j], save_fig=False)
     
     """
-    type_hf = ['gomez'] #, 'control', 
-    params = ['cat50ref', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 'ntm'] # 
+    type_hf = ['control', 'gomez'] #, 
+    params = ['ku', 'kuw', 'kws', 'ktrpn', 'Trpn50', 'gammaw', 'gammas', 'rs', 'rw', 'Tref', 'cat50ref', 'ntm'] # 
     for i in range(len(type_hf)):
         for j in range(len(params)):
-            plot_isometric_full(param=params[j], hf_type=type_hf[i], mech_type='iso')
-    """
+            plot_isometric_full(param=params[j], hf_type=type_hf[i], mech_type='iso', save_fig=True)
+    
