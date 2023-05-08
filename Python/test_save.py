@@ -209,12 +209,13 @@ def save_pop_traces(mech_type, hf_type, cell_type='endo'):
         'Lambda': Lambdas
         }
     
-    np.save(f'init_pop/pop_res_{mech_type}_{hf_type}.npy', d, allow_pickle=True)
+    np.save(f'init_pop/pop_res_{mech_type}_{hf_type}.npy', d, allow_pickle=True) 
 
 
 def plot_drug(mech_type, hf_type, drug_type, out=None):
     all_values = np.load(f'drug/drug_res_{drug_type}_{mech_type}_{hf_type}.npy', allow_pickle=True)
     control_values = np.load(f'init_pop/res_{mech_type}_control.npy', allow_pickle=True)
+    control_values_HF = np.load(f'init_pop/res_{mech_type}_gomez.npy', allow_pickle=True)
 
     V = all_values.item().get("V")
     Cai = all_values.item().get("Cai")
@@ -224,12 +225,18 @@ def plot_drug(mech_type, hf_type, drug_type, out=None):
     Cai_control = control_values.item().get("Cai")
     Ta_control = control_values.item().get("Ta")
 
+    V_control_HF = control_values_HF.item().get("V")
+    Cai_control_HF = control_values_HF.item().get("Cai")
+    Ta_control_HF = control_values_HF.item().get("Ta")
+
     if mech_type=='iso':
         CaTrpn = all_values.item().get("CaTrpn")
         CaTrpn_control = control_values.item().get("CaTrpn")
+        CaTrpn_control_HF = control_values_HF.item().get("CaTrpn")
     else:
         Lambda = all_values.item().get("Lambda")
         Lambda_control = control_values.item().get("Lambda")
+        Lambda_control_HF = control_values_HF.item().get("Lambda")
 
     fig, ax = plt.subplots(2, 2, sharex=True, figsize=(14,8))
 
@@ -274,6 +281,13 @@ def plot_drug(mech_type, hf_type, drug_type, out=None):
     ax[1][1].set_xlabel("Time (ms)")
     ax[1][1].grid(linewidth=0.3)
 
+    if hf_type=='gomez':
+        ax[0][0].plot(tsteps[::50], V_control_HF, linewidth=1, alpha=1, color='lime', ls='--', zorder=3)
+        ax[0][1].plot(tsteps[::50], Cai_control_HF, linewidth=1, alpha=1, color='lime', ls='--', zorder=3)
+        ax[1][0].plot(tsteps[::50], Ta_control_HF, linewidth=1, alpha=1, color='lime', ls='--', zorder=3)
+        ax[1][1].plot(tsteps[::50], CaTrpn_control_HF if mech_type=='iso' else Lambda_control_HF, linewidth=1, alpha=1, color='lime', ls='--', zorder=3)
+
+
 
     ax[0][0].set_ylim(-92, 50)
     ax[0][1].set_ylim(0.00005, 0.00085)
@@ -307,9 +321,10 @@ def plot_drug(mech_type, hf_type, drug_type, out=None):
 
     custom_lines = [Line2D([0], [0], color=c_line, ls='-'),
                     Line2D([0], [0], color=c, ls='-'),
-                    Line2D([0], [0], color='k',  ls='--')]
+                    Line2D([0], [0], color='k',  ls='--'),
+                    Line2D([0], [0], color='lime',  ls='--')]
 
-    plt.figlegend(custom_lines, ['population', 'mean', 'control'], loc=7)
+    plt.figlegend(custom_lines, ['population', 'mean', 'control', 'HF'], loc=7)
     fig.suptitle(f'{drug_type.capitalize()} (population: {mech_type}, {hf_type})', fontsize='x-large')
 
     if out != None:
@@ -320,10 +335,32 @@ def plot_drug(mech_type, hf_type, drug_type, out=None):
 
 def drug_control_save(mech_type, hf_type, cell_type='endo'):
     y0 = np.load(f"init_values/coupled/{hf_type}_{cell_type}_coupled_{mech_type}_100.npy")
-    parameters = model.init_parameter_values(
+    if hf_type=='control':
+        parameters = model.init_parameter_values(
             celltype=0 if cell_type == "endo" else 1 if cell_type == "epi" else 2,
             isometric=1 if mech_type=='iso' else 0,
             lmbda_set=1,
+            )
+    if hf_type=='gomez':
+        parameters = model.init_parameter_values(
+            celltype=0 if cell_type == "endo" else 1 if cell_type == "epi" else 2,
+            isometric=1 if mech_type=='iso' else 0,
+            lmbda_set=1,
+            GNaL_rate=1.80,
+            Gto_rate=0.40,
+            GK1_rate=0.68,
+            Gncx_rate=1.750,
+            Jleak_rate=1.30,
+            Jserca_rate=0.5,
+            CaMKa_rate=1.50,
+            Pnak_rate=0.70,
+            Pnab_rate=1,
+            Pcab_rate=1,
+            thl_rate=1.80,
+            Jrel_inf_sensitivity=0.80,
+            Jrel_infp_sensitivity=0.80,
+            #mechanical
+            cat50ref_rate=0.7
         )
     
     y = odeint(model.rhs, y0, tsteps, args=(parameters,))
@@ -357,6 +394,8 @@ def drug_control_save(mech_type, hf_type, cell_type='endo'):
 
 
 if __name__ == '__main__':
+
+    #drug_control_save(mech_type='iso', hf_type='gomez')
     """
     mech = ['iso', 'dyn']
     hf = ['control', 'gomez']
@@ -371,18 +410,19 @@ if __name__ == '__main__':
         p.join()
     
     """ 
-    mech = ['iso'] #, 'dyn'
+    
+    mech = ['dyn', 'iso'] #, 'dyn'
     hf = ['gomez'] #'control', 
     drug = [
-        'dofetilide', #'verapamil', 'quinidine','bepridil','sotalol', 'azimilide','ibutilide',
-        #'vandetanib', 'disopyramide', 'chlorpromazine', 'cisapride', 'ondansetron', 'terfenadine',
-        #'diltiazem', 'mexiletine', 'ranolazine', 'astemizole', 'clozapine', 'domperidone', 'droperidol', 
-        #'pimozide', 'risperidone', 'loratadine', 'metoprolol', 'nifedipine', 'nitrendipine', 'tamoxifen',
-        #'clarithromycin'
+        'dofetilide', 'verapamil', 'quinidine','bepridil','sotalol', 'azimilide','ibutilide',
+        'vandetanib', 'disopyramide', 'chlorpromazine', 'cisapride', 'ondansetron', 'terfenadine',
+        'diltiazem', 'mexiletine', 'ranolazine', 'astemizole', 'clozapine', 'domperidone', 'droperidol', 
+        'pimozide', 'risperidone', 'loratadine', 'metoprolol', 'nifedipine', 'nitrendipine', 'tamoxifen',
+        'clarithromycin'
         ]
     
     for m in mech:
         for h in hf:
             for d in drug:
-                plot_drug(mech_type=m, hf_type=h, drug_type=d, out=None)
-    
+                plot_drug(mech_type=m, hf_type=h, drug_type=d, out=True)
+   

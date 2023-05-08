@@ -19,7 +19,7 @@ from drug_values import drug_dict
 from population_func import apd_values, catd_values, tad_values, state_biomarkers, monitored_biomarkers , extra_biomarkers_drug
 
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
-pop_size = 1000
+pop_size = 100
 
 drug_h = [
         "dofetilide",
@@ -93,7 +93,7 @@ def df_pop_drug(mech_type, hf_type, drug_type, cell_type='endo'):
     # load random sampling values
     rand_val = np.load(f'init_pop/rand_sample_iso_control.npy')
     # load specific population
-    y0s = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}.npy') 
+    y0s = np.load(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_NEW.npy') 
 
     biomarkers = []
 
@@ -658,7 +658,8 @@ if __name__ == '__main__':
         p.join()
     """
     #df_diff_csv(mech_type='dyn', hf_type='control')
-    biomarkers_paired_smd(mech_type='dyn', hf_type='gomez', drugs=drug_all)
+    #biomarkers_paired_smd(mech_type='dyn', hf_type='gomez', drugs=drug_all)
+    df_pop_drug(mech_type='iso', hf_type='control', drug_type='quinidine_EMERGENCY_TEST', cell_type='endo')
     
     """
     drugs = [

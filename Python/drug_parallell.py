@@ -119,13 +119,13 @@ def conc_del_pop(mech_type, hf_type, drug_type):
     np.save(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_NEW.npy', full_arr)
 
     for i in range(1, 11):
-        os.remove(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_{i}_NEW.npy')
+        os.remove(f'init_pop_drug/population_{mech_type}_{hf_type}_{drug_type}_{i}.npy')
 
 
 if __name__ == '__main__':
     drug = sys.argv[1]
-    mech = ['iso', 'dyn']
-    hf = ['gomez'] #'control', 
+    mech = ['iso'] #'dyn'
+    hf = ['control'] #'control', 
 
     proc = []
     for m in mech:
@@ -136,9 +136,10 @@ if __name__ == '__main__':
                 proc.append(p)
     for p in proc:
         p.join()
-    
+
+
+
     for m in mech:
         for h in hf:
             conc_del_pop(m, h, drug)
 
-    
