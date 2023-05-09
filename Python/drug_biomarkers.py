@@ -19,7 +19,7 @@ from drug_values import drug_dict
 from population_func import apd_values, catd_values, tad_values, state_biomarkers, monitored_biomarkers , extra_biomarkers_drug
 
 tsteps = np.arange(0.0, 1000.0, 0.1)  # real run 1000
-pop_size = 100
+pop_size = 1000
 
 drug_h = [
         "dofetilide",
